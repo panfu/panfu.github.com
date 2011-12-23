@@ -10,9 +10,7 @@
 &lt;p&gt;一般来说，每个网站都有一个或多个专门存储密码的数据库。这些数据库通常并不能下载到。那黑客们是如何得到数据库的呢？&lt;/p&gt;
 &lt;p&gt;比较技术的方法是通过一些服务器返回的错误信息推断数据库的位置，例如“%5c大法”。它的原理是，故意进行一个错误的数据库访问，从错误信息中获取数据库真实地址，再通过这个地址下载数据库。但修补这个漏洞的方法也很简单，只要更改一下数据库出错时返回的错误信息就可以了。&lt;/p&gt;
 &lt;p&gt;有经验的软件管理员自然会对这种技术手段有所防范。但密码泄漏的途径其实不像想象中的那么“技术”：可能某个辞职员工偷偷带走了数据库；可能某台存储数据库的服务器染上了病毒；可能有人偷偷潜入了机房拷贝走了数据……总之，黑客会通过各种可能的手段获得存有用户名和密码的数据库，数据库泄露的危险总是存在的。&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMzEvdW8vMWgvMzF1bzFo
-LnBuZw==
- alt="图片来源：XKCD" /&gt;&lt;p class="document-figcaption"&gt;图片来源：XKCD&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMzEvdW8vMWgvMzF1bzFoLnBuZw==" alt="图片来源：XKCD" /&gt;&lt;p class="document-figcaption"&gt;图片来源：XKCD&lt;/p&gt;&lt;/div&gt;
 &lt;/div&gt;
 &lt;div class="section" id="id3"&gt;
 &lt;h1&gt;道高一尺：加密让数据库更安全&lt;/h1&gt;
@@ -20,19 +18,13 @@ LnBuZw==
 &lt;p&gt;既然明文密码太危险，那不妨用加密密码。但怎么加密呢？这就要说到大名鼎鼎的哈希函数了。&lt;/p&gt;
 &lt;p&gt;哈希是一种从一到多（或从多到一）对应的函数，它的作用是将一个很大的集合映射到一个很小的集合。例如，我们可以设计一个哈希函数 h(x) = x % 100 （其中 % 表示取余数，如 4 % 3 = 1，8 % 2 = 0），这样我们就把所有的整数 x 映射到了一个 0 到 99 的有限集合中。而像 MD5 和 SHA-1 这些著名的算法，都是哈希函数。当然，和前面这个 h(x) 不同，它们的计算方法非常复杂，常常需要经过很多轮计算。&lt;/p&gt;
 &lt;p&gt;哈希一个很重要的作用是帮助查找。很容易看到，如果两个数 x &lt;sub&gt;1&lt;/sub&gt; 和 x &lt;sub&gt;2&lt;/sub&gt; 对应的哈希值 h( x &lt;sub&gt;1&lt;/sub&gt; ) 和 h( x &lt;sub&gt;2&lt;/sub&gt; ) 不相等，那么 x &lt;sub&gt;1&lt;/sub&gt; 和 x &lt;sub&gt;2&lt;/sub&gt; 也一定不相等。这样一来，我们就可以用两个对象的哈希值进行过滤。因为哈希值的集合比原始值的集合更小，所以比较哈希值的速度是很快的。&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvanUvaGcvc3YvanVoZ3N2
-LnBuZw==
- alt="典型的哈希算法。 图片来源：维基百科" /&gt;&lt;p class="document-figcaption"&gt;典型的哈希算法。 图片来源：维基百科&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvanUvaGcvc3YvanVoZ3N2LnBuZw==" alt="典型的哈希算法。 图片来源：维基百科" /&gt;&lt;p class="document-figcaption"&gt;典型的哈希算法。 图片来源：维基百科&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;而这个想法，也被应用于密码的保护上。实际上，无论是避免数据库泄露后的危险，还是出于对用户隐私保护的需要，现在大部分网站数据库存储的密码都不是明文，而是用户密码的哈希值，也就是所谓的加密密码。如果输入了一个错误的密码，它的哈希值就会有很大可能性与正确密码的哈希值不同，那么用哈希值代替密码进行比较也没有什么问题。另外，哈希的作用是将一个大集合映射到一个小集合，所以它的结果一定是不可逆的（因为从小集合到大集合的映射是一对多的映射）。这种不可逆性，使得理论上从哈希值找出原始密码成了一个不可能的任务，从而保护了密码。&lt;/p&gt;
 &lt;p&gt;但是，也会出现这种情况：两个不同的原始密码，它们的哈希值一样。这在密码学上被称作“碰撞”。碰撞是一个设计良好的哈希函数需要极力避免的，正因为如此，很多哈希函数的运算结果都很长，例如知名的 MD5 算法，它的运算结果包括了 128 位二进制数。试想一下，如果使用之前提到的哈希函数 h(x) = x % 100，随便输入一个密码，就有 1/100 的可能性验证通过，那还了得！好在现在流行的哈希函数，在这一点上做的还都还不错。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="id4"&gt;
 &lt;h1&gt;魔高一丈：哈希不是万能的&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbG4vcWgvaXEvbG5xaGlx
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbG4vcWgvaXEvbG5xaGlx
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbG4vcWgvaXEvbG5xaGlxLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbG4vcWgvaXEvbG5xaGlxLnBuZw==" /&gt;
 &lt;p&gt;前面提到，哈希是不可逆的。那么使用哈希存储的密码，真的就安全了吗？如果你当真这么认为，那黑客就要在一旁偷偷地笑了——非也，非也！&lt;/p&gt;
 &lt;p&gt;事实上，即使数据库中的密码经过了哈希函数的加密，数据库泄露之后也会有很大的危险，尤其是当使用的哈希算法还是 MD5 和 SHA-1 这种已经流行很多年的“大众脸”时。确实，哈希本身并不可逆，但要注意的是，黑客并没多少兴趣知道原始密码：因为服务器验证密码时不需要原始密码。只要找到一个和数据库里存储的哈希值相同的密码，就可以用它轻松通过验证，这正是前面提到哈希函数要尽力避免碰撞的原因。&lt;/p&gt;
 &lt;p&gt;通常黑客手中，都会有一份很长的列表，称为“碰撞库”。碰撞库里存储的，是很多常用密码对应的各种哈希值。这里的“常用”，并不单单是指 “123456789” 这种“烂大街”的密码——事实上，任何不够长、只含字母或数字的类似于 “iloveyou” 这种由简单单词组成的密码，都可能出现在碰撞库中，现在黑客们生成的碰撞库的规模早已超出我们的想象。对于大部分常用密码，只要把泄漏出的哈希值放到碰撞库中比对一下，就可以找到一个产生碰撞的密码。&lt;/p&gt;
@@ -40,11 +32,7 @@ LnBuZw==
 &lt;/div&gt;
 &lt;div class="section" id="id5"&gt;
 &lt;h1&gt;并非束手无策：猜不出的哈希算法&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcGgvbG0vZmcvcGhsbWZn
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcGgvbG0vZmcvcGhsbWZn
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcGgvbG0vZmcvcGhsbWZnLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcGgvbG0vZmcvcGhsbWZnLnBuZw==" /&gt;
 &lt;p&gt;即便如此，网站管理员也并非束手无策。黑客可以用列表来破解哈希后的密码，很大程度上是因为加密时使用的哈希算法是公开的。如果黑客不知道加密的哈希算法是什么，那他也就无从下手了。&lt;/p&gt;
 &lt;p&gt;一个直接的解决办法是，自己设计一个哈希算法。然而，一个好的哈希算法是很难设计的——既要避免碰撞，又不能有明显的规律，做到这两点要比想象中的要困难很多。因此实际应用中更多的是利用已有的哈希算法进行多次哈希。&lt;/p&gt;
 &lt;p&gt;但是单纯的多次哈希，依然阻挡不住黑客。两次 MD5、三次 MD5之类的方法，我们能想到，黑客自然也能想到。特别是对于一些开源代码，这样哈希更是相当于直接把算法告诉了黑客。&lt;/p&gt;
@@ -64,11 +52,7 @@ salt1+用户名+salt2+MD5，得到：&amp;#64;#$%sqybi^&amp;amp;*()25d55ad283aa4
 &lt;/div&gt;
 &lt;div class="section" id="id6"&gt;
 &lt;h1&gt;最后的安全攻防：数据库泄露之外的危险&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMTUvbHEvMGcvMTVscTBn
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMTUvbHEvMGcvMTVscTBn
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMTUvbHEvMGcvMTVscTBnLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMTUvbHEvMGcvMTVscTBnLnBuZw==" /&gt;
 &lt;p&gt;但是，即使有这种安全的密码存储方式，也不能太掉以轻心。在文章的一开始我们就说过，密码的存储和验证有三个步骤，每个步骤都有可能被黑客趁虚而入，数据库泄露只不过是其中的一个罢了。&lt;/p&gt;
 &lt;p&gt;在用户输入密码这个步骤，黑客可以通过植入木马等方式直接监视用户的键盘操作；在密码被传输到服务器这个步骤，黑客可以设法截获数据包分析其中包含的密码。而即使数据库有“加盐”，设置过于简单的密码也不是好选择——salt的值也不是没有泄露的可能！&lt;/p&gt;
 &lt;p&gt;要说的是，无论对于用户还是网站管理员，有良好的安全习惯才是最好的防御手段。用户应经常查毒，了解每个系统进程的作用，让木马没有藏身之处；网站管理员可以通过提供https连接或者在本地对密码进行首次加密再传输给服务器，避免数据包被截获；而经常更换密码，重要的账号不重复使用同一个密码，都可以在密码泄露的时候把损失降到最低。关于用户应当如何对待自己密码这个问题，死理性派的 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/61644/"&gt;你的密码安全吗？小心那些隐藏的陷阱&lt;/a&gt; 有过全面而详细的介绍，强烈推荐大家一读。&lt;/p&gt;
@@ -93,18 +77,10 @@ LnBuZw==
 </description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">sqybi</dc:creator><guid>http://www.guokr.com/article/81430/</guid></item><item><title>在2011年梦想未来10大生活
 </title><link>http://www.guokr.com/article/81416/</link><description>&lt;div class="document"&gt;
 &lt;p&gt;百度通过分析2011年全年的搜索数据，发布了“2011百度搜索风云榜”。在特色榜单中有不少都跟科技主题沾边，尤其是“十大未来生活”这个搜索结果。现在就让我们来仔细看看，在即将过去的这一年里，使用百度搜索引擎的中国网民最关心的是哪些科技前沿内容吧。&lt;/p&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaGovazYvMHgvaGprNjB4
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaGovazYvMHgvaGprNjB4
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaGovazYvMHgvaGprNjB4LnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaGovazYvMHgvaGprNjB4LnBuZw==" /&gt;
 &lt;div class="section" id="id1"&gt;
 &lt;h1&gt;云计算&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3EvdG8vanovY3F0b2p6
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3EvdG8vanovY3F0b2p6
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3EvdG8vanovY3F0b2p6LnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3EvdG8vanovY3F0b2p6LnBuZw==" /&gt;
 &lt;p&gt;云计算并不算是新鲜的概念，但从雏形阶段的电子邮件系统一步步走到如今唾手可得的“云端设备”，我们事实上正见证着互联网概念的稳步成熟——37年间，互联网从传送数据进化为传送计算机本身！&lt;/p&gt;
 &lt;p&gt;【相关阅读】：&lt;/p&gt;
 &lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/zone/cloud/"&gt;通向未来的筋斗云专区&lt;/a&gt;&lt;/p&gt;
@@ -123,11 +99,7 @@ LnBuZw==
 &lt;/div&gt;
 &lt;div class="section" id="lbs"&gt;
 &lt;h1&gt;LBS&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMXEvbTkvcGUvMXFtOXBl
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMXEvbTkvcGUvMXFtOXBl
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMXEvbTkvcGUvMXFtOXBlLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMXEvbTkvcGUvMXFtOXBlLnBuZw==" /&gt;
 &lt;p&gt;LBS（基于地理位置的网络服务）确实在过去的一年间风靡一时。从街旁、到大众点评，同一个理念，却带来层出不穷的体验。相信未来人与人的联络将突破五感的限制，科技辅助下的“第6感”将成为一种不可或缺的能力。&lt;/p&gt;
 &lt;p&gt;【相关阅读】：&lt;/p&gt;
 &lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/74562/"&gt;“伸手要钱”的一体化&lt;/a&gt;&lt;/p&gt;
@@ -158,11 +130,7 @@ LnBuZw==
 &lt;/div&gt;
 &lt;div class="section" id="d"&gt;
 &lt;h1&gt;裸眼3D显示&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvazAvZGgvNWwvazBkaDVs
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvazAvZGgvNWwvazBkaDVs
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvazAvZGgvNWwvazBkaDVsLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvazAvZGgvNWwvazBkaDVsLnBuZw==" /&gt;
 &lt;p&gt;显示技术日新月异的今天，我们能体验到前人无法体验的视觉效果：面前的子弹几乎把我击中，手中的游戏机正向我开火，我被迫全力反击……裸眼3D曾被认为不可能在单块屏幕上实现，但对生动影像的渴望促使我们完成了它，并且抛开了耳鼻的束缚，显得如此优雅。3D不只打开了新的维度，更打开了无限可能。&lt;/p&gt;
 &lt;p&gt;【相关阅读】：&lt;/p&gt;
 &lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/3017/"&gt;真·3D球形显示器&lt;/a&gt;&lt;/p&gt;
@@ -184,11 +152,7 @@ LnBuZw==
 &lt;/div&gt;
 &lt;div class="section" id="id16"&gt;
 &lt;h1&gt;柔性屏幕&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvN3Avb3AvYjcvN3BvcGI3
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvN3Avb3AvYjcvN3BvcGI3
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvN3Avb3AvYjcvN3BvcGI3LnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvN3Avb3AvYjcvN3BvcGI3LnBuZw==" /&gt;
 &lt;p&gt;随着各大公司对柔性屏幕研发进度的曝光，《三体》中的“信息衣”似乎正逐步成为现实。“柔性”并不是一个可有可无的特点，形状将决定功能，一旦显示器的固态特性被颠覆，人类的创意或许也能由此拓展出无穷无尽的屏幕用法。&lt;/p&gt;
 &lt;p&gt;【相关阅读】：&lt;/p&gt;
 &lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/31115/"&gt;用可弯折的纸片手机打电话&lt;/a&gt;&lt;/p&gt;
@@ -204,11 +168,7 @@ LnBuZw==
 &lt;/div&gt;
 &lt;div class="section" id="id23"&gt;
 &lt;h1&gt;光场相机&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvajkvZ3kvcDgvajlneXA4
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvajkvZ3kvcDgvajlneXA4
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvajkvZ3kvcDgvajlneXA4LnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvajkvZ3kvcDgvajlneXA4LnBuZw==" /&gt;
 &lt;p&gt;光场相机在去年走出实验室，正式进入民用市场。表面上，这似乎只是摄影迷的狂欢——“永远不用担心焦距了！”但从本质上来看，它将走的更远，设想一下可自由控制景深的电影、电视，无疑将是在3D技术之后的又一个影像突破。&lt;/p&gt;
 &lt;p&gt;【相关阅读】：&lt;/p&gt;
 &lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/69734/"&gt;相机革命：先拍照后对焦的光场相机&lt;/a&gt;&lt;/p&gt;
@@ -231,9 +191,7 @@ LnBuZw==
 &lt;p&gt;&lt;strong&gt;传送门2（Portal 2）&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;开发商：Valve Software&lt;/p&gt;
 &lt;p&gt;平台：PC、PS3、Xbox360&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveTcvOTEvMWIveTc5MTFi
-LnBuZw==
- alt="传送门2" /&gt;&lt;p class="document-figcaption"&gt;传送门2&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveTcvOTEvMWIveTc5MTFiLnBuZw==" alt="传送门2" /&gt;&lt;p class="document-figcaption"&gt;传送门2&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;这是一款解谜类的FPS（第一人称射击）游戏，剧情紧接着前作展开（据说，前作Portal是贝拉克•奥巴马总统最爱玩的游戏，不知真假）。游戏进行的方式很特别，不像FPS通常表现的那样，只是疯狂地开枪杀人；在《传送门 2》中，你手中的时空枪能够在你面前的墙壁上开一扇传送门，让你自由穿梭在种种匪夷所思的关卡中，十分杀脑细胞。游戏的故事背景被设定在名作《半条命》的架构内，和“光圈科技”有关，游戏画面简洁而富有时尚气息。想体验科幻氛围吗？想向奥巴马的智商看齐吗？不要错过本作。&lt;/p&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
@@ -241,9 +199,7 @@ LnBuZw==
 &lt;p&gt;&lt;strong&gt;战争机器3（Gears of War 3）&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;开发商：EPIC GAME&lt;/p&gt;
 &lt;p&gt;平台：Xbox360&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvazIvcmovZTgvazJyamU4
-LnBuZw==
- alt="战争机器3" /&gt;&lt;p class="document-figcaption"&gt;战争机器3&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvazIvcmovZTgvazJyamU4LnBuZw==" alt="战争机器3" /&gt;&lt;p class="document-figcaption"&gt;战争机器3&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;作为系列三部曲的完结作，《战争机器3》的表现可以说是四平八稳，稳中有胜。这款TPS（第三人称射击）游戏保持了超高的画面和游戏品质，并且完成了把这个科幻故事讲完的历史重任……笔者对本游戏没能获得VGA的XBox360最佳游戏而深感愤怒。顺便吐槽一下，可能由于《战争机器2》的故事设置问题，本作作为三部曲的终结，其故事和世界架构反而有点狗尾续貂的感觉（再度被群殴）。不过，究竟怎么样，还需要大家亲自上阵杀一把。（剧透，本作中有疑似丧尸的怪物哦！）&lt;/p&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
@@ -251,9 +207,7 @@ LnBuZw==
 &lt;p&gt;&lt;strong&gt;蝙蝠侠：阿克哈姆城（Batman: Arkham City）&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;开发商：Rocksteady&lt;/p&gt;
 &lt;p&gt;平台：PC、PS3、Xbox360&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdHAvY2wvODkvdHBjbDg5
-LnBuZw==
- alt="蝙蝠侠：阿克哈姆城" /&gt;&lt;p class="document-figcaption"&gt;蝙蝠侠：阿克哈姆城&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdHAvY2wvODkvdHBjbDg5LnBuZw==" alt="蝙蝠侠：阿克哈姆城" /&gt;&lt;p class="document-figcaption"&gt;蝙蝠侠：阿克哈姆城&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;这款跨平台的作品竟然获得了VGA评选的“最佳Xbox360”游戏，令笔者大跌隐形眼镜。蝙蝠侠的魅力果然无人能挡，自从前作《蝙蝠侠：阿克哈姆疯人院》黑马跃出以来，本系列改变了广大游戏迷“（电影、动漫）改编作品无佳作”的偏见。本作的类型是ACT（动作），由于题材的限制，科幻的表现力略有不足。&lt;/p&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
@@ -264,9 +218,7 @@ LnBuZw==
 &lt;p&gt;&lt;strong&gt;刺客信条：启示录（Assassin’s Creed: Revelations）&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;开发商：Ubi&lt;/p&gt;
 &lt;p&gt;平台：PC、PS3、XBox360&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcjEvOHAvazMvcjE4cGsz
-LnBuZw==
- alt="刺客信条：启示录" /&gt;&lt;p class="document-figcaption"&gt;刺客信条：启示录&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcjEvOHAvazMvcjE4cGszLnBuZw==" alt="刺客信条：启示录" /&gt;&lt;p class="document-figcaption"&gt;刺客信条：启示录&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;母猪上树了，《刺客信条》也量产了。科幻与历史题材的交融，绝美的中世纪场景。不足之处也很明显：游戏玩法过于重复。&lt;/p&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
@@ -274,9 +226,7 @@ LnBuZw==
 &lt;p&gt;&lt;strong&gt;杀出重围：人类革命（Deus Ex: Human Revolution）&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;开发商：Eidos Montreal&lt;/p&gt;
 &lt;p&gt;平台：PC、PS3、XBox360&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd3EvYXovcjIvd3FhenIy
-LnBuZw==
- alt="杀出重围：人类革命" /&gt;&lt;p class="document-figcaption"&gt;杀出重围：人类革命&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd3EvYXovcjIvd3FhenIyLnBuZw==" alt="杀出重围：人类革命" /&gt;&lt;p class="document-figcaption"&gt;杀出重围：人类革命&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;虽然是一款FPS，但拥有相当高的自由度，加入了浓重的RPG元素。战斗、潜入、黑客等模式都很有趣，顺便一提，本作是赛博朋克风格的，喜欢《黑客帝国》、《神经浪游者》的同学一定要体验一下《人类革命》！&lt;/p&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
@@ -284,9 +234,7 @@ LnBuZw==
 &lt;p&gt;&lt;strong&gt;漫画英雄VS卡普空3（Marvel Vs Capcom 3）&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;开发商：Capcom&lt;/p&gt;
 &lt;p&gt;平台：PS3、Xbox360&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZDUvbjkvMmMvZDVuOTJj
-LnBuZw==
- alt="漫画英雄VS卡普空3" /&gt;&lt;p class="document-figcaption"&gt;漫画英雄VS卡普空3&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZDUvbjkvMmMvZDVuOTJjLnBuZw==" alt="漫画英雄VS卡普空3" /&gt;&lt;p class="document-figcaption"&gt;漫画英雄VS卡普空3&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;本作是FTG（格斗）游戏，其中钢铁侠、万磁王、绿巨人、金刚狼、蜘蛛侠、末日博士、美国队长等科幻漫画人物及威斯克、洛克人Zero等卡普空（Capcom）老牌游戏人物均有上佳表现，绝对适合全家同乐……或者两人同乐，勾搭妹子……&lt;/p&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
@@ -294,9 +242,7 @@ LnBuZw==
 &lt;p&gt;&lt;strong&gt;子弹风暴（Bulletstorm）&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;开发商：People Can Fly&lt;/p&gt;
 &lt;p&gt;平台：PC、PS3、XBOX360&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcWIvNjYvZ24vcWI2Nmdu
-LnBuZw==
- alt="子弹风暴" /&gt;&lt;p class="document-figcaption"&gt;子弹风暴&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcWIvNjYvZ24vcWI2NmduLnBuZw==" alt="子弹风暴" /&gt;&lt;p class="document-figcaption"&gt;子弹风暴&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;本作算是一匹小小的黑马，在FPS的玩法方面有一定的创新，强调“花式射击”。剧情里让人在墙壁上行走的磁力鞋和能够把敌人从掩体后面扯过来的电磁鞭令人印象深刻。世界设计有点“废土”风格，对白也很风趣（低俗？）。&lt;/p&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
@@ -304,9 +250,7 @@ LnBuZw==
 &lt;p&gt;&lt;strong&gt;孤岛危机2（Crysis 2）&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;开发商：Crytek Studios&lt;/p&gt;
 &lt;p&gt;平台：PC、XBOX360、PS3&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveDEvYW8vN3EveDFhbzdx
-LnBuZw==
- alt="孤岛危机2" /&gt;&lt;p class="document-figcaption"&gt;孤岛危机2&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveDEvYW8vN3EveDFhbzdxLnBuZw==" alt="孤岛危机2" /&gt;&lt;p class="document-figcaption"&gt;孤岛危机2&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;以号称史上画面最强的引擎“Cry Engine 3”开发，画面确实美得没话说。可是，作为一款FPS，游戏性实在太过平庸。单纯地冲着主角那身超酷的纳米装甲去玩吧！&lt;/p&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
@@ -314,9 +258,7 @@ LnBuZw==
 &lt;p&gt;&lt;strong&gt;死亡空间2（Dead Space 2）&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;开发商：Visceral Games&lt;/p&gt;
 &lt;p&gt;平台：PC、PS3、XBOX360&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOG8vdHkvYWwvOG90eWFs
-LnBuZw==
- alt="死亡空间2" /&gt;&lt;p class="document-figcaption"&gt;死亡空间2&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOG8vdHkvYWwvOG90eWFsLnBuZw==" alt="死亡空间2" /&gt;&lt;p class="document-figcaption"&gt;死亡空间2&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;本作相当恐怖，胆小者慎入。作为一款TPS游戏，本作的剧情很是有趣，主角的那身招牌盔甲也很是可爱……&lt;/p&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
@@ -324,9 +266,7 @@ LnBuZw==
 &lt;p&gt;&lt;strong&gt;狂怒（Rage）&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;开发商：id Software&lt;/p&gt;
 &lt;p&gt;平台：PC、PS3、XBox360&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYWsvM3IvcHMvYWszcnBz
-LnBuZw==
- alt="狂怒" /&gt;&lt;p class="document-figcaption"&gt;狂怒&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYWsvM3IvcHMvYWszcnBzLnBuZw==" alt="狂怒" /&gt;&lt;p class="document-figcaption"&gt;狂怒&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;本作的画面处理得真的是十分漂亮。它的启示录风格也许会让你想起《辐射》系列。不过，启示录或废土风格的同类作品太多了，像《战争机器》、《子弹风暴》等，本作只能排在最后面了……&lt;/p&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
@@ -337,9 +277,7 @@ LnBuZw==
 &lt;p&gt;&lt;strong&gt;永远的毁灭公爵（Duke Nukem Forever）&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;开发商：Gearbox Software&lt;/p&gt;
 &lt;p&gt;平台：PC、XBox360、PS3&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZW0vb2YvYzgvZW1vZmM4
-LnBuZw==
- alt="永远的毁灭公爵" /&gt;&lt;p class="document-figcaption"&gt;永远的毁灭公爵&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZW0vb2YvYzgvZW1vZmM4LnBuZw==" alt="永远的毁灭公爵" /&gt;&lt;p class="document-figcaption"&gt;永远的毁灭公爵&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;游戏界的奇葩隆重登场……一款跳票了十四年的丧尸游戏，曾经等待他的青年们都快抱上孙子了。前几年有传言说这款FPS真的死了，绝对不会推出了，可它还是诈尸了！&lt;/p&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
@@ -347,9 +285,7 @@ LnBuZw==
 &lt;p&gt;&lt;strong&gt;战锤40000：星际战队（Warhammer 40,000: Space Marines）&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;开发商：RelicEnte&lt;/p&gt;
 &lt;p&gt;平台：PS3、XBox360&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaWoveWovZW4vaWp5amVu
-LnBuZw==
- alt="战锤40000：星际战队" /&gt;&lt;p class="document-figcaption"&gt;战锤40000：星际战队&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaWoveWovZW4vaWp5amVuLnBuZw==" alt="战锤40000：星际战队" /&gt;&lt;p class="document-figcaption"&gt;战锤40000：星际战队&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;老牌桌面游戏战锤《40K》不甘寂寞，推出了这款ARPG作品。笔者还没有时间玩，体验过的同学不妨发表一下高见。&lt;/p&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
@@ -360,9 +296,7 @@ LnBuZw==
 &lt;p&gt;&lt;strong&gt;合金装备：高清收藏集（METAL GEAR SOLID HD COLLECTIO）&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;开发商：KONAMI&lt;/p&gt;
 &lt;p&gt;平台： PS3、Xbox360&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdGgvejgvNGQvdGh6ODRk
-LnBuZw==
- alt="合金装备：高清收藏集" /&gt;&lt;p class="document-figcaption"&gt;合金装备：高清收藏集&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdGgvejgvNGQvdGh6ODRkLnBuZw==" alt="合金装备：高清收藏集" /&gt;&lt;p class="document-figcaption"&gt;合金装备：高清收藏集&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;在这里要特别推荐本作。这是《合金装备》系列在次世代平台上的合集，包括PS2平台《合金装备2：自由之子》、《合金装备：食蛇者》及PSP平台的《合金装备：和平行者》的高清重制版。其中，本作的PS3版还有《合金装备》初代作品以及《合金装备4：爱国者之枪》两款游戏，可谓阵容非常庞大。怀旧党和阴差阳错没玩过本系列的同学一定要试试这套合集！&lt;/p&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
@@ -370,9 +304,7 @@ LnBuZw==
 &lt;p&gt;&lt;strong&gt;光环：战斗进化纪念版（Halo: Combat Evolved Anniversary）&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;开发商：343 Industries&lt;/p&gt;
 &lt;p&gt;平台：XBox360&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3EvZm0vMjMvY3FmbTIz
-LnBuZw==
- alt="光环：战斗进化纪念版" /&gt;&lt;p class="document-figcaption"&gt;光环：战斗进化纪念版&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3EvZm0vMjMvY3FmbTIzLnBuZw==" alt="光环：战斗进化纪念版" /&gt;&lt;p class="document-figcaption"&gt;光环：战斗进化纪念版&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;今年果然是炒冷饭的一年，时值科幻大作《光环》问世十周年，黑心游戏商果不其然发行了初代的重制版。本作的最大特色是能够切换到XBox版本的画面，以当年的视点体验游戏。不知道本作发售后，《生活大爆炸》里谢耳朵（Sheldon）他们的”Halo night”是否也会玩上本作呢？&lt;/p&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
@@ -387,11 +319,7 @@ LnBuZw==
 &lt;p&gt;我们中大多数人可能会说“绝对能”，其他一些则可能回答“也许吧”。而最诚实的答案呢？——我不知道。&lt;/p&gt;
 &lt;p&gt;虽然我们都认为自己在遇到这种情况时会做出正确的选择，甚至做出英雄壮举，但研究表明，事情往往并非如此。“比起自己，人们通常更愿意评判他人的道德观，” 哈佛商学院副教授弗朗西斯卡 • 基诺（Francesca Gino）等 3 人撰文表示，“人们相信自己比他人更加诚实可信，也更努力地做好事。”&lt;/p&gt;
 &lt;p&gt;我们对自己的这份信心未能得到历史或研究的证实。&lt;/p&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd2gvdm8vMGMvd2h2bzBj
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd2gvdm8vMGMvd2h2bzBj
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd2gvdm8vMGMvd2h2bzBjLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd2gvdm8vMGMvd2h2bzBjLnBuZw==" /&gt;
 &lt;div class="section" id="id1"&gt;
 &lt;h1&gt;普通人很容易被说服去做那些他们相信是错误的事情&lt;/h1&gt;
 &lt;p&gt;学术界关于此问题最著名的例子是由耶鲁大学心理学家斯坦利 • 米尔格拉姆（Stanley Milgram）在 20 世纪 60 年代初期进行的一项实验。在实验中被试会扮演“教师”，他们需要引导“学习者”进行词语配对。每当学习者给出错误答案时，教师可以电击学习者，并针对每个错误答案增加电击强度。&lt;/p&gt;
@@ -413,9 +341,7 @@ LnBuZw==
 &lt;div class="section" id="id3"&gt;
 &lt;h1&gt;要行善，先创造行善的环境&lt;/h1&gt;
 &lt;p&gt;斯坦福大学心理学退休教授及大量著作的作者菲利普 • G • 津巴多（Philip G. Zimbardo）花了毕生时间研究道德堕落，他的著作包括《路西法效应：好人是如何变成恶魔的》（ &lt;em&gt;The Lucifer Effect: Understanding How Good People Turn Evil&lt;/em&gt; ）。 1971 年，津巴多教授设计了那个著名的“斯坦福监狱实验”：在这个实验里扮演“狱警”的大学生在极短的时间里转变成了虐待狂，拒绝向扮演“囚犯”的学生提供水和食物、不让他们睡觉、用灭火器喷“囚犯”并使他们光着身子遭受鞭打。&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbXUvb3IvOTAvbXVvcjkw
-LnBuZw==
- alt="津巴多教授设计的“斯坦福监狱实验”：在实验中，扮演“狱警”的大学生（左一、左二为其中的两人）在极短的时间里转变成了虐待狂，拒绝向扮演“囚犯”的学生（图中戴头罩者为其中三人）提供水和食物、不让他们睡觉、用灭火器喷“囚犯”并使他们光着身子遭受鞭打（Dr. Philip Zimbardo/nytimes.com）" /&gt;&lt;p class="document-figcaption"&gt;津巴多教授设计的“斯坦福监狱实验”：在实验中，扮演“狱警”的大学生（左一、左二为其中的两人）在极短的时间里转变成了虐待狂，拒绝向扮演“囚犯”的学生（图中戴头罩者为其中三人）提供水和食物、不让他们睡觉、用灭火器喷“囚犯”并使他们光着身子遭受鞭打（Dr. Philip Zimbardo/nytimes.com）&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbXUvb3IvOTAvbXVvcjkwLnBuZw==" alt="津巴多教授设计的“斯坦福监狱实验”：在实验中，扮演“狱警”的大学生（左一、左二为其中的两人）在极短的时间里转变成了虐待狂，拒绝向扮演“囚犯”的学生（图中戴头罩者为其中三人）提供水和食物、不让他们睡觉、用灭火器喷“囚犯”并使他们光着身子遭受鞭打（Dr. Philip Zimbardo/nytimes.com）" /&gt;&lt;p class="document-figcaption"&gt;津巴多教授设计的“斯坦福监狱实验”：在实验中，扮演“狱警”的大学生（左一、左二为其中的两人）在极短的时间里转变成了虐待狂，拒绝向扮演“囚犯”的学生（图中戴头罩者为其中三人）提供水和食物、不让他们睡觉、用灭火器喷“囚犯”并使他们光着身子遭受鞭打（Dr. Philip Zimbardo/nytimes.com）&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;津巴多教授把恶行分成了三类：个人的恶行（“少数烂苹果”）、情境的恶行（“一桶坏苹果”）或体制的恶行（“大量坏苹果的缔造者”）。&lt;/p&gt;
 &lt;p&gt;“由于各种通常无法察觉的环境——胁迫、匿名、非人化，大多数人可以在极短的时间内受惑而跨过善恶的界线，”他说，“我们不想接受这种想法，因为它抨击了我们关于人类本性尊严的概念。”&lt;/p&gt;
 &lt;blockquote&gt;
@@ -448,9 +374,7 @@ LnBuZw==
 &lt;h1&gt;别动！圣诞老人！&lt;/h1&gt;
 &lt;p&gt;2009年12月23日，一个圣诞老人走进了位于美国田纳西州的纳什维尔（Nashville）的一家银行。和其他圣诞老人装束差不多，他穿着红袍子、带着白色的大胡子，只是脸上多了一副墨镜。&lt;/p&gt;
 &lt;p&gt;他走到柜台前，银行职员大概以为圣诞老人来取钱给孩子们买礼物，便很有礼貌地请他摘下墨镜，不过，他从背上的大口袋里掏出的却是一支手枪。劫匪命令职员们把钱放到他的口袋里，并且警告说，倘若有人敢塞进 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/66157/"&gt;染料包&lt;/a&gt; 的话，他就回来杀死所有的人。&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbHMvc28vZXMvbHNzb2Vz
-LnBuZw==
- alt="抢劫的圣诞老人。图：镜报" /&gt;&lt;p class="document-figcaption"&gt;抢劫的圣诞老人。图：镜报&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbHMvc28vZXMvbHNzb2VzLnBuZw==" alt="抢劫的圣诞老人。图：镜报" /&gt;&lt;p class="document-figcaption"&gt;抢劫的圣诞老人。图：镜报&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;最终，这位贪婪的圣诞老人拎着沉甸甸的口袋扬长而去。而因为他这身装束在圣诞节期间再常见不过，监控录像也提供不了多少有用的线索。实际上，这种伪装伎俩并非他的首创，早在1927年，就有抢匪在德克萨斯州一起银行劫案中用过这招了。当时，一名劫匪穿了一件应景的圣诞老人服来伪装自己。许多小孩甚至把他当成了派发礼物的圣诞老人，尾随着劫匪朝银行浩浩荡荡走去。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="id3"&gt;
@@ -458,9 +382,7 @@ LnBuZw==
 &lt;p&gt;圣诞节里最开心的是什么人？当然是孩子们了。可以不用上课、可以堆雪人，还有漂亮的圣诞树和好多礼物，多棒的日子啊！嗯，如果能再去参加一个为期3天的圣诞节活动，和父母、老师一起享受豪华午餐，去寻找隐藏在树丛里的礼物，还能和来自28个国家的大使们一起玩耍，看哈利•波特的精彩表演，哇，简直是帅呆了！至于票价嘛，只要区区10美元！&lt;/p&gt;
 &lt;p&gt;这项活动听起来是这样的不可思议，简直就像是圣诞老人本人举办的一样。它使美国迈阿密各个学校的孩子们心动不已，纷纷央求父母去买票参加。一些学校甚至组织烤饼干义卖，帮那些家庭贫困的孩子们支付票价，引得消防队、警察局的好心叔叔们慷慨解囊，只为了让孩子们有个难忘的圣诞节回忆。&lt;/p&gt;
 &lt;p&gt;但是，当2003年的圣诞节前夜，来自迈阿密各地的2800名孩子及他们的家长、老师来到票上指定的地方时，却发现这只不过是个残酷的骗局：没有圣诞树和彩灯，没有豪华的舞台，没有哈利•波特，除了一个关闭的游乐场外什么都没有。孩子们的这个圣诞节，就被这次活动的主办者，50岁的戴维.李.艾勒沙（David Lee Ellisor）给偷走了，他虚构了整个演出，一共敛财38000美元，其中大部分用来还债，并给自己买了一块价值5000元的手表。&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZHIvc2YvbHcvZHJzZmx3
-LnBuZw==
- alt="骗钱的圣诞老人不是好圣诞老人。图：cbc.ca" /&gt;&lt;p class="document-figcaption"&gt;骗钱的圣诞老人不是好圣诞老人。图：cbc.ca&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZHIvc2YvbHcvZHJzZmx3LnBuZw==" alt="骗钱的圣诞老人不是好圣诞老人。图：cbc.ca" /&gt;&lt;p class="document-figcaption"&gt;骗钱的圣诞老人不是好圣诞老人。图：cbc.ca&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;FBI随即在全国对他进行通缉，他于次年的1月自首，并因欺诈罪被判处7年徒刑，这是此类犯罪的最重刑期。这件事情中唯一让人感到欣慰的是，受骗的孩子中的一部分，随后接到了迈阿密市市长曼尼•迪亚斯（Manny Diaz）夫妇的邀请，参加了在当地展览中心举办的圣诞晚会活动，抚慰了他们受伤的小心灵。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="id4"&gt;
@@ -468,9 +390,7 @@ LnBuZw==
 &lt;p&gt;尽管一些邪恶的圣诞老人把圣诞节变成了“圣诞劫”，不过还是有一些笨贼，专挑圣诞假期出动，给各位圣诞节值班的警察找点“乐子”。&lt;/p&gt;
 &lt;p&gt;2010年12月22日的下午，一名男子走进美国康涅狄格州一家印度风味餐厅，拿出手枪并高喊抢劫。但他没有想到的是，厨房里两名厨师非但没有被唬住，反而提着菜刀，气势汹汹地朝他扑来，吓得他赶紧解释说自己只是开了个玩笑，然后落荒而逃。&lt;/p&gt;
 &lt;p&gt;不过警方很快将其抓捕。这名劫匪名叫杰罗姆•泰勒（Jerome Taylor），时年20岁，据称只是为了弄点钱给自己的孩子们买吃的，度过一个美好的圣诞节。令人惊讶的是，警方搜查后发现，他并没有携带任何武器，那支所谓的手枪，不过是一部iPhone4手机，套着一个形似左轮手枪枪柄的手机套而已。尽管他获得了餐厅老板的谅解，但还是将为自己的抢劫未遂行为面临法律的惩罚。&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdmUvcTcvdzcvdmVxN3c3
-LnBuZw==
- alt="少年，iPhone不是这么用的。图：Techweb" /&gt;&lt;p class="document-figcaption"&gt;少年，iPhone不是这么用的。图：Techweb&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdmUvcTcvdzcvdmVxN3c3LnBuZw==" alt="少年，iPhone不是这么用的。图：Techweb" /&gt;&lt;p class="document-figcaption"&gt;少年，iPhone不是这么用的。图：Techweb&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;另一起笨蛋劫匪制造的圣诞抢劫发生在2007年。圣诞夜，凌晨2点左右，位于华盛顿州的基特萨普县的波尔斯博小镇（Poulsbo）已经是一片静谧，大家都在用不同的方式享受着圣诞夜。突然，一个煞风景的劫匪闯进了305号高速公路旁的一家汽车服务站，挥舞着一把刀子，威胁说要杀掉服务站里的员工——除非他们给他钱。&lt;/p&gt;
 &lt;p&gt;拥有圣诞精神的员工们并没有为他的威胁所吓倒，反而立即拨打了911报警电话。气急败坏的劫匪狠狠揍了一名员工，砸烂了几张柜台后夺门而逃，跳上等在外面的一辆汽车逃之夭夭。服务站员工对赶来的警察说，车上还有一名劫匪，车子是1999年款的红色本田雅阁轿车。警方随即对这一地区的车辆进行了搜索，并盘查可疑人员。&lt;/p&gt;
 &lt;p&gt;可能是因为圣诞老人不忍心看到加油站在这么好的日子遭劫，顺手帮了一把：就在一个多小时以后，刚才那辆红色本田车，又原路开了回来，而且另外一个人从车上走下来，向他们打听出城的路该往哪边走。很明显，这两个劫匪迷路了……&lt;/p&gt;
@@ -543,11 +463,7 @@ LnBuZw==
 
 </description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">环球科技观光团</dc:creator><guid>http://www.guokr.com/article/81387/</guid></item><item><title>蚊子如何调节体温？
 </title><link>http://www.guokr.com/article/81386/</link><description>&lt;div class="document"&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYjAveG8vcmUvYjB4b3Jl
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYjAveG8vcmUvYjB4b3Jl
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYjAveG8vcmUvYjB4b3JlLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYjAveG8vcmUvYjB4b3JlLnBuZw==" /&gt;
 &lt;p&gt;许多吸血昆虫会在进食的同时嘘嘘，这样它们就可以避免吸入过多的液体，还能从血液中吸收更多的养分。但有些种类的蚊子还会进行一种名为“预排尿”的活动，它们不从吸取的血细胞中榨取营养物质，而是直接分泌出几滴刚吸入的新鲜血液。&lt;/p&gt;
 &lt;p&gt;蚊子的这种行为让科学家们感到很困惑，研究者表示，血液是一种非常珍贵的资源，吸血的风险相当的大。12月15日发表在《当代生物学》（Current Biology）杂志上的 &lt;a target="_blank" class="reference external" href="http://www.cell.com/current-biology/abstract/S0960-9822%2811%2901311-X"&gt;研究&lt;/a&gt; 显示，预排尿可以防止冷血的蚊子在享受血液大餐时体温过热，根据被叮咬动物的不同，血液的温度可以达到40℃。&lt;/p&gt;
 &lt;p&gt;实验中的斯氏按蚊（Anopheles stephensi）在进食大约一至两分钟后就会开始分泌尿液，并在腹部的末端，即肛门处进行预排尿，有时尿液在滴落之前，会先形成液珠并粘附在蚊子身上。这时一些液珠就会像汗液那样蒸发，将蚊子的腹部温度降低约4℃。&lt;/p&gt;
@@ -571,17 +487,11 @@ LnBuZw==
 
 </description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">疯子精灵王</dc:creator><guid>http://www.guokr.com/article/81386/</guid></item><item><title>2011年中国人最关心什么健康话题
 </title><link>http://www.guokr.com/article/81383/</link><description>&lt;div class="document"&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaWYveWovOWMvaWZ5ajlj
-LnBuZw==
- alt="图片来源：goodhealthhabit.com" /&gt;&lt;p class="document-figcaption"&gt;图片来源：goodhealthhabit.com&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaWYveWovOWMvaWZ5ajljLnBuZw==" alt="图片来源：goodhealthhabit.com" /&gt;&lt;p class="document-figcaption"&gt;图片来源：goodhealthhabit.com&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;百度通过分析2011年全年的搜索数据，发布了“2011百度搜索风云榜”。作为百度近年来的常设项目，“搜索风云榜”历来都更偏重于自身产品的总结盘点，但今年的榜单盖头换面，带来了不少值得琢磨的新看点。比如就有我们老百姓都关心的食品安全和健康问题。而其中不少问题果壳都曾有过解读，就让我们来回顾一下吧。&lt;/p&gt;
 &lt;div class="section" id="id1"&gt;
 &lt;h1&gt;十大食品安全&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYXgvNTIvbzgvYXg1Mm84
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYXgvNTIvbzgvYXg1Mm84
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYXgvNTIvbzgvYXg1Mm84LnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYXgvNTIvbzgvYXg1Mm84LnBuZw==" /&gt;
 &lt;p&gt;&lt;strong&gt;1. 塑化剂&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;塑化剂风波在2011年可谓席卷了全台湾的饮食业，从灌装饮料到面包辅料无不染指，更让大陆消费者产生了恐慌。面对如此大规模并被长期隐瞒的食品安全事件，监管问题成为了众矢之的。&lt;/p&gt;
 &lt;p&gt;【果壳视野】：&lt;/p&gt;
@@ -656,11 +566,7 @@ LnBuZw==
 &lt;/div&gt;
 &lt;div class="section" id="id16"&gt;
 &lt;h1&gt;十大健康问题：&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMjUvbzgvcTAvMjVvOHEw
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMjUvbzgvcTAvMjVvOHEw
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMjUvbzgvcTAvMjVvOHEwLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMjUvbzgvcTAvMjVvOHEwLnBuZw==" /&gt;
 &lt;p&gt;&lt;strong&gt;1.    食品安全&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;瘦肉精、地沟油、染色馒头、塑化剂，各种名词顺口溜般的流传于网络，足以证明今年网友对食品安全的关注。甚至由此展开上面那张“十大食品安全问题”榜单。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;2.    颈椎病&lt;/strong&gt;&lt;/p&gt;
@@ -712,11 +618,7 @@ LnBuZw==
 &lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
 &lt;/div&gt;
 &lt;p&gt;PS： “网友们用特有的方式，使一些在现实中需要很多成本才能实现的东西变成一种社会力量。”谢谢你们的喜爱，使谣言粉碎机成为2011年十大网络助力之首。&lt;/p&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaWQvcHkvY3IvaWRweWNy
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaWQvcHkvY3IvaWRweWNy
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaWQvcHkvY3IvaWRweWNyLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaWQvcHkvY3IvaWRweWNyLnBuZw==" /&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 
@@ -725,183 +627,103 @@ LnBuZw==
 &lt;p&gt;又到年底盘点时，2011年对电玩界来说是一个值得纪念的年份，各大游戏厂商推出了比往年更多的大制作，而独立游戏制作者们也在今年贡献了许多佳作。美国《连线》杂志评选出了2011年最令人兴奋的20款电子游戏，平台不限，从TV GAME、PC 到掌机和手机无所不包。&lt;/p&gt;
 &lt;div class="section" id="no-20-to-the-moon"&gt;
 &lt;h1&gt;NO.20 《To The Moon》&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdHkvaGMvaGkvdHloY2hp
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdHkvaGMvaGkvdHloY2hp
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdHkvaGMvaGkvdHloY2hpLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdHkvaGMvaGkvdHloY2hpLnBuZw==" /&gt;
 &lt;p&gt;虽然《To The Moon》只是一款独立游戏，其画面、游戏性、音乐或许都没办法和那些耗费巨万的大厂出品相比，但是它却是所有游戏编剧都必须通关的一部作品。这部游戏并不是一个关于拯救世界或是英雄主义的篇章，也没法给玩家带来那些激情和刺激，但是作者却从一个死去的老人的角度为我们讲述了一个关于爱和交流的美丽故事，四个多小时的游戏流程仿佛一篇美丽的诗章，在故事的结尾，也许你也会与主人公一同默默流泪。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="no-19-2"&gt;
 &lt;h1&gt;NO.19 《巫师2》&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd3MvaHkvNmYvd3NoeTZm
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd3MvaHkvNmYvd3NoeTZm
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd3MvaHkvNmYvd3NoeTZmLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd3MvaHkvNmYvd3NoeTZmLnBuZw==" /&gt;
 &lt;p&gt;如果你已经被《质量效应2》和《龙腾世纪》游戏进程中几乎一边倒的真善美选项折磨得欲哭无泪，想要满足一下自己的小邪恶的话，《巫师2》绝对符合你的需求。在本作中，善与恶并没有绝对的划分，一切都处于灰色领域，而玩家在游戏中做出的每一个决定都有着长远的影响，也许你现在帮了某个NPC一把，他在近结局时才会给你回报。这种极强的角色扮演真实感也正是本游戏迷人的地方。与此同时，《巫师2》还拥有优秀的画面与打斗系统，绝对是不可错过的一款佳作。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="no-18"&gt;
 &lt;h1&gt;NO.18 《双子座行动》&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZXMvNzAvaHQvZXM3MGh0
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZXMvNzAvaHQvZXM3MGh0
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZXMvNzAvaHQvZXM3MGh0LnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZXMvNzAvaHQvZXM3MGh0LnBuZw==" /&gt;
 &lt;p&gt;作为一部黑色科幻冒险游戏，本作完美集合了《银翼杀手》和《猴子岛》曲折的情节和令人难以自拔的解谜过程，虽然指点式游戏的老手们不会觉得这款游戏有多困难，但其充实而连贯的情节绝对会让你忍不住通宵攻关。作为2010年独立游戏界学生展示单元的冠军作品，相信热爱复古解谜类游戏的玩家绝对会对它爱不释手。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="no-17"&gt;
 &lt;h1&gt;NO.17 《火箭飞人》&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvNHUvbXcvMmIvNHVtdzJi
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvNHUvbXcvMmIvNHVtdzJi
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvNHUvbXcvMmIvNHVtdzJiLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvNHUvbXcvMmIvNHVtdzJiLnBuZw==" /&gt;
 &lt;p&gt;一款在App Store中售价仅0.99美元的游戏能拥有如此强的可玩性的确出人意料，本作摈弃了大部分复杂的操作和属性——玩家掌握点击屏幕让小飞人升高、再移开手指让他降落这两个最简单的操作，然后用完成任务赚来的金币购买交通工具和解锁后续关卡即可。Halfbrick用这款游戏让大家不再只顾切水果，而开始爱上摆弄这个火箭飞人，也再次证明自己的确是个优秀的手机游戏厂商。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="no-16-6"&gt;
 &lt;h1&gt;NO.16 《英雄传说6：空之轨迹》&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvM24vb3QvMTMvM25vdDEz
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvM24vb3QvMTMvM25vdDEz
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvM24vb3QvMTMvM25vdDEzLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvM24vb3QvMTMvM25vdDEzLnBuZw==" /&gt;
 &lt;p&gt;爱情、背叛、优秀的打斗系统、无数支线任务……你对PSP上JRPG游戏的所有幻想都能在这里得到实现，包括一个强制性的滑稽变装场景。好吧，它上榜还有疑问么？&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;注：&lt;/strong&gt; 美版空之轨迹今年才上市。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="no-15"&gt;
 &lt;h1&gt;NO.15 《子弹风暴》&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcDAvYTEvcGkvcDBhMXBp
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcDAvYTEvcGkvcDBhMXBp
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcDAvYTEvcGkvcDBhMXBpLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcDAvYTEvcGkvcDBhMXBpLnBuZw==" /&gt;
 &lt;p&gt;无视本作中呆头呆脑的人设和生硬的对话，其流畅的操作感、连击系统和独创的“技巧杀戮”机制绝对能让你一次发泄个够。快去买一盘游戏光碟并跟我一起祈祷Epic赶紧出下一部续作吧！&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="no-14-3"&gt;
 &lt;h1&gt;NO.14 《神秘海域3：德雷克的诡计》&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdXMva2sveDYvdXNra3g2
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdXMva2sveDYvdXNra3g2
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdXMva2sveDYvdXNra3g2LnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdXMva2sveDYvdXNra3g2LnBuZw==" /&gt;
 &lt;p&gt;《神秘海域3》所讲述的故事也许很难理解，其中很多小故事陷阱也并不讨好，但是众多人物开始互动时，顽皮狗工作室的强大叙事功力就显现出来了：很少有人能像艾米·汉妮恩和她的团队一样将游戏角色刻画得如此深入，玩家甚至能对主人公南森·德雷克和他的强盗团之间反反复复的纠葛感同身受。《神秘海域》系列组品有点像那部经典的电影《印第安纳·琼斯》，不过德雷克比哈里森·福特扮演的考古学家可有意思多了。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="no-13"&gt;
 &lt;h1&gt;NO.13 《超级兄弟：剑与巫术》&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMmgvN3QvM28vMmg3dDNv
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMmgvN3QvM28vMmg3dDNv
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMmgvN3QvM28vMmg3dDNvLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMmgvN3QvM28vMmg3dDNvLnBuZw==" /&gt;
 &lt;p&gt;这款“指点式”冒险游戏总让玩家感觉是为自己量身定做的——它能让你在适当的时刻无比放松，也能瞬间让你的心跳上升到120。它不像你之前玩过的任何一款类似游戏，不会让你为了解谜而重复做无用功直到抓狂。总之，它很赞。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="no-12"&gt;
 &lt;h1&gt;NO.12 《雷曼：起源》&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvODUvOHIvNDgvODU4cjQ4
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvODUvOHIvNDgvODU4cjQ4
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvODUvOHIvNDgvODU4cjQ4LnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvODUvOHIvNDgvODU4cjQ4LnBuZw==" /&gt;
 &lt;p&gt;本作虽然是一款2D横版过关游戏，但其丰富多彩的手绘画面细节绝对是年度最佳游戏画面表现之一，其唯一缺点就是画面太美让玩家经常停下来欣赏风景导致挂掉。与《新超级马里奥兄弟》一样，在Wii平台上的《雷曼：起源》拥有接触的单/多人游戏体验，但是本作更为流畅和多样化。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="no-11-3"&gt;
 &lt;h1&gt;NO.11 《抵抗3》&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvemcveDYvZnMvemd4NmZz
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvemcveDYvZnMvemd4NmZz
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvemcveDYvZnMvemd4NmZzLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvemcveDYvZnMvemd4NmZzLnBuZw==" /&gt;
 &lt;p&gt;大家都记得《抵抗1》为PS3开拓了大片疆土，但是续作的表现却差强人意。但是失眠症游戏工作室的回归让《抵抗3》重新焕发了活力。罗伯特·海莱茵撰写了一个斯坦贝克式的游戏脚本，又加上了最牛逼最华丽的武器，让本作的单人游戏模式质量大大超越前作。近期官方又发布了新的补丁包，增加了生存模式和七首来自顶尖金属乐队Mastodon的歌曲。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="no-10-2"&gt;
 &lt;h1&gt;NO.10 《死亡空间2》&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMTgvZmgvcGcvMThmaHBn
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMTgvZmgvcGcvMThmaHBn
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMTgvZmgvcGcvMThmaHBnLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMTgvZmgvcGcvMThmaHBnLnBuZw==" /&gt;
 &lt;p&gt;与前作相比，本作提高了游戏运行的流畅性，这也让游戏中那些让人尖叫的画面更为突出，即便你满载弹药，什么怪物都无法阻挡你前行的步伐，但是你还是会在它们突然出现时惊声尖叫。所以科幻恐怖游戏的爱好者们，你们绝对不能错过《死亡空间2》&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="no-9"&gt;
 &lt;h1&gt;NO.9 《杀出重围：人间革命》&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbHQvNzUvYmovbHQ3NWJq
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbHQvNzUvYmovbHQ3NWJq
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbHQvNzUvYmovbHQ3NWJqLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbHQvNzUvYmovbHQ3NWJqLnBuZw==" /&gt;
 &lt;p&gt;在所有2011年推出的游戏中，本作可能是扑街可能性最大的——“珠玉在前”这个词最为适合《杀出重围·人间革命》，有两部被历史所肯定的前作，本作的压力不是一般的大。幸好它并没有让我们失望。本作呈现出了所有吸引人的要素：阴冷的未来世界、扭曲的阴谋、疯狂的肢体改造和新颖的黑客能力拓展，这也让最后的BOSS战有了更多的可能性。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="no-8"&gt;
 &lt;h1&gt;NO.8 《黑暗之魂》&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvdm8vMjAvaWEvdm8yMGlh
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvdm8vMjAvaWEvdm8yMGlh
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvdm8vMjAvaWEvdm8yMGlhLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvdm8vMjAvaWEvdm8yMGlhLnBuZw==" /&gt;
 &lt;p&gt;在这个所有游戏都追求“操作简单容易上手”八个字的时代，居然还会出现《黑暗之魂》这样需要玩家认真研究游戏基本操作的奇葩，并且其游戏难度之大简直媲美曾经的那部国产“神作”《血狮》，基本上就是怎么不让你过怎么来，随时随地玩家都有可能挂掉。不过这也正迎合了许多玩家的好胜心，当你终于将其通关之时，那种舒爽真是无以言表。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="no-7"&gt;
 &lt;h1&gt;NO.7 《堡垒》&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOHYvOWEvbGsvOHY5YWxr
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOHYvOWEvbGsvOHY5YWxr
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOHYvOWEvbGsvOHY5YWxrLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOHYvOWEvbGsvOHY5YWxrLnBuZw==" /&gt;
 &lt;p&gt;《堡垒》的手绘式游戏画面精致而细腻，搭配上具有强烈感情色彩的游戏音乐已经让众多玩家倾倒其中。更出彩的是，游戏的旁白系统会在整个游戏过程中为你进行解说，从你选择的武器到你犯下的错误，事无巨细统统包括；再加上一个引人入胜的故事，堪称完美。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="no-6-3d"&gt;
 &lt;h1&gt;NO.6 《超级马里奥3D》&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaTEvaWovbDkvaTFpamw5
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaTEvaWovbDkvaTFpamw5
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaTEvaWovbDkvaTFpamw5LnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaTEvaWovbDkvaTFpamw5LnBuZw==" /&gt;
 &lt;p&gt;就想曾经的《超级马里奥64》拯救了蹩脚而古旧的N64平台一样，《超级马里奥3D》也扮演了3DS的救世主角色。让本作大获成功的不仅仅是堪比《超级马里奥银河》的游戏质量，更在于它解答了人们对于3DS平台的诸多疑虑。这款游戏真正让3DS呈现出了完全裸眼3D的效果，也让每个玩家再也舍不得在游戏时把3D模式关闭。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="no-5"&gt;
 &lt;h1&gt;NO.5 《黑色洛城》&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveDEvdngvMWcveDF2eDFn
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveDEvdngvMWcveDF2eDFn
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveDEvdngvMWcveDF2eDFnLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveDEvdngvMWcveDF2eDFnLnBuZw==" /&gt;
 &lt;p&gt;如果你无法接受本作有时稍显勉强和矛盾的游戏设置的话，那么你完全可以将它放到年度最差名单中。但是那令人惊讶的角色真实性、逼真的动画效果和扣人心弦的故事都让玩家不得不忽视一些无伤大雅的小缺点了。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="no-4-2"&gt;
 &lt;h1&gt;NO.4 《传送门2》&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvN2svbmMvanAvN2tuY2pw
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvN2svbmMvanAvN2tuY2pw
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvN2svbmMvanAvN2tuY2pwLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvN2svbmMvanAvN2tuY2pwLnBuZw==" /&gt;
 &lt;p&gt;作为一款创新了射击游戏玩法的大作，《传送门2》用“隔空取物”的独有操作大大挑战了玩家的想象力和空间思维能力，同时本作的解谜部分也堪称上佳，更别忘了还有著名演员斯蒂芬·莫昌特和J·K·西蒙斯的倾情献声，这一切都证明本作并没有给《传送门》系列抹黑。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="no-3"&gt;
 &lt;h1&gt;NO.3 《蝙蝠侠：阿甘之城》&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdjgvYWwvdHMvdjhhbHRz
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdjgvYWwvdHMvdjhhbHRz
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdjgvYWwvdHMvdjhhbHRzLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdjgvYWwvdHMvdjhhbHRzLnBuZw==" /&gt;
 &lt;p&gt;季军属于《蝙蝠侠：阿甘之城》。“成为蝙蝠侠”——这一点已经足够让无数玩家疯狂了，再加上比之前更自由流畅的打斗、更大的高谭城、更多的新鲜小玩意儿、解谜奖杯、挑战和坏人们，这是一个更宽广自由的游戏天地，等待你来探索。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="no-2"&gt;
 &lt;h1&gt;NO.2 《塞尔达传说：天空之剑》&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYnAvZWEvaWkvYnBlYWlp
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYnAvZWEvaWkvYnBlYWlp
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYnAvZWEvaWkvYnBlYWlpLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYnAvZWEvaWkvYnBlYWlpLnBuZw==" /&gt;
 &lt;p&gt;有些人会告诉你这款游戏仅仅是增强了体感功能，让玩家能更精确地用wii摇杆操纵手中的武器，但是我们要告诉你的是，一个简单的硬件提升是无法涵盖本作的众多突破的——除了保留了经典的“you found an item”提示音和几个熟悉的NPC之外，几乎《塞尔达传说》系列所有方面的细节都被重新考虑并修改过。而本作的大卖也证实了这次全面创新的成功。亚军非它莫属。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="no-1-5"&gt;
 &lt;h1&gt;NO.1  《上古卷轴5：天际》&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZGcvbGEvczYvZGdsYXM2
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZGcvbGEvczYvZGdsYXM2
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZGcvbGEvczYvZGdsYXM2LnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZGcvbGEvczYvZGdsYXM2LnBuZw==" /&gt;
 &lt;p&gt;五年磨一剑，Bethesda没有让任何人失望，他们创造了一个广阔而充满生机的的游戏世界，甚至让人怀疑这个世界是不是真实存在，从熙熙攘攘的巫师学院到充满尸体的废弃灯塔，每一个细节都无比真实，每一个地方都有你想要探寻的奇妙故事。无与伦比，这是我们对《天际》的评价。&lt;/p&gt;
 &lt;p&gt;尽管你已经在这个游戏上耗费了上百个小时，并且还有大堆游戏等着你去玩，但是你还是忍不住要打开它——这就是一个冠军游戏才能拥有的强大吸引力。&lt;/p&gt;
 &lt;blockquote&gt;
@@ -919,9 +741,7 @@ LnBuZw==
 &lt;div class="section" id="id1"&gt;
 &lt;h1&gt;高宅大院，尊享宽阔独享空间&lt;/h1&gt;
 &lt;p&gt;首先看看全景。猪场的选址设计是一门学问，平坦开阔、向阳避风自不必说，还需要按照风向依次安排员工的行政管理与生活区，猪的养殖区、隔离区，使各区分开，以防疫病随风势传染。在生产区中，不同类别的猪也要分成不同猪舍。&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveGQvOTQvM2YveGQ5NDNm
-LnBuZw==
- alt="网易提供的养猪场示意图。从这张图可以看到，该猪场可谓依山傍水，环境优雅。" /&gt;&lt;p class="document-figcaption"&gt;网易提供的养猪场示意图。从这张图可以看到，该猪场可谓依山傍水，环境优雅。&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveGQvOTQvM2YveGQ5NDNmLnBuZw==" alt="网易提供的养猪场示意图。从这张图可以看到，该猪场可谓依山傍水，环境优雅。" /&gt;&lt;p class="document-figcaption"&gt;网易提供的养猪场示意图。从这张图可以看到，该猪场可谓依山傍水，环境优雅。&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;在生产区中，公猪、母猪、断奶仔猪、商品猪各有各的猪舍，各猪舍之间有消毒池作为关卡，以便于防疫。丁家猪的低调神秘其实也与此有关，试想如果全国记者全跑到猪舍去采访，肯定会给防疫工作带来不少麻烦，那是任何一个猪场都消受不了的。&lt;/p&gt;
 &lt;p&gt;较为奇特的是，网易猪舍将采用“空中楼阁”的建设方式。实际上楼房养猪在我国已经颇有尝试，比如杭州某种猪场建有六层楼房猪舍。高楼养猪有环境干燥、通风较好、便于防治疫病的优点，但多被用于节约猪舍占地面积，以发展高密度饲养，因此还没有摆脱“猪挤猪”的传统模式。而网易的猪场在高层饲养的同时，还保证了猪只活动自由：新闻称“丁家猪”的“猪均占地面积”是2平方米。这可以使得猪群不会过于拥挤，改善猪舍的环境、通风、防疫，避免猪与猪之间爪牙相向。&lt;/p&gt;
 &lt;/div&gt;
@@ -935,9 +755,7 @@ LnBuZw==
 &lt;div class="section" id="id3"&gt;
 &lt;h1&gt;高端管理，领航未来猪居模式&lt;/h1&gt;
 &lt;p&gt;网易作为一个互联网公司，我们总希望它能在猪的饲养管理中增加点“科技含量”，比如让猪从小就学着刷刷微博什么的，当然，这是夸张的说法。丁磊本人曾公开表示过会将“云计算”“物联网”等思路融入到猪的饲养中去。我们猜想，这可能会用到一些信息化管理技术，比如在猪的耳标上应用无线射频终端收集、记录信息，在计算机上实行统一管理，这样也便于猪肉出售后的质检和回溯。目前这种技术在国内也有一定范围的推广。&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZnMvaHYvazEvZnNodmsx
-LnBuZw==
- alt="猪真的能实现“放养”吗？也许这只是一种美好的愿望。图片来自blueridgeblog.blogs.com" /&gt;&lt;p class="document-figcaption"&gt;猪真的能实现“放养”吗？也许这只是一种美好的愿望。图片来自blueridgeblog.blogs.com&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZnMvaHYvazEvZnNodmsxLnBuZw==" alt="猪真的能实现“放养”吗？也许这只是一种美好的愿望。图片来自blueridgeblog.blogs.com" /&gt;&lt;p class="document-figcaption"&gt;猪真的能实现“放养”吗？也许这只是一种美好的愿望。图片来自blueridgeblog.blogs.com&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;我国千百年来的农户散养模式较为粗放，用泔水、玉米秸等一切能利用的食料养猪，效率低下，无法满足人们对猪肉的需求。二十世纪八十年代后引进了第二代集约型的工业化养殖模式，一跃成为养猪大国，养猪量已占全世界的一半。正由于猪肉的需求、产出量如此之大，也就出现了生产过于追求高效而无法兼顾动物福利、环境保护的弊端，也在一定程度上制约了猪肉质量和安全性的提升，甚至遭遇国际贸易壁垒，因此并不是养猪发达国家。&lt;/p&gt;
 &lt;p&gt;相比之下，目前对猪生产福利较为注重的主要是美洲、澳大利亚和荷兰、丹麦等欧盟国家，他们注重增强各种福利设施建设，取消固定身体（如限位栏）、剪牙断尾等使猪产生不适的管理手段，甚至直接废除集约圈养而返回放养模式，想法设法使猪按照天性生长，做到“生前康乐，死后安全”。网易尝试新的养猪技术，“让猪活得有尊严”，或许能引领我国养殖模式的新潮流也仍未可知。&lt;/p&gt;
 &lt;blockquote&gt;
@@ -957,9 +775,7 @@ LnBuZw==
 </description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">暗号</dc:creator><guid>http://www.guokr.com/article/81358/</guid></item><item><title>独裁者的六大共同特质
 </title><link>http://www.guokr.com/article/81353/</link><description>&lt;div class="document"&gt;
 &lt;p&gt;独裁者有着怎样的人格特质？《科学美国人》博客作者杰森•古尔德曼（Jason G. Goldman）近日撰写博文，介绍了独裁者心理学研究。&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcGQvNDgvZm8vcGQ0OGZv
-LnBuZw==
- alt="从左至右依次为金正日、希特勒和萨达姆。" /&gt;&lt;p class="document-figcaption"&gt;从左至右依次为金正日、希特勒和萨达姆。&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcGQvNDgvZm8vcGQ0OGZvLnBuZw==" alt="从左至右依次为金正日、希特勒和萨达姆。" /&gt;&lt;p class="document-figcaption"&gt;从左至右依次为金正日、希特勒和萨达姆。&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;独裁者一直是心理学家非常感兴趣的研究对象，尽管为什么普通、理性的大众会狂热地追随那些危险的独裁者也是值得研究的课题，但有些心理学家对独裁者本身的心理有更浓厚的兴趣。或许，当心理学家接到一个响当当的大人物的案例，会觉得更有趣吧。&lt;/p&gt;
 &lt;div class="section" id="id1"&gt;
 &lt;h1&gt;荣格眼中的希特勒和墨索里尼&lt;/h1&gt;
@@ -977,11 +793,7 @@ LnBuZw==
 &lt;p&gt;2009年，库里奇和赛格尔将他们的研究推广到了最近刚刚过世的前朝鲜最高领导人金正日的身上。经人引荐，库里奇和赛格尔找到了一位韩国心理学家，据说这位匿名的心理学家曾经对金正日进行过“深入的心理培训”，并且与金正日建立了密切的私人关系。这位心理学家同意为库里奇和赛格尔提供他对金正日心理情况的报告。&lt;/p&gt;
 &lt;p&gt;通过这份报告，金正日也表现出独裁者六大人格缺陷： 施虐倾向、反社会、偏执、过度自恋、精神分裂、人格分裂。&lt;/p&gt;
 &lt;p&gt;下表显示了三大独裁者的人格缺陷状况，包括在《精神疾病诊断与统计手册》第五版（DSM-IV）中提到的14项人格缺陷以及精神分裂症、精神失常等方面。精神疾病以严重程度排序，三大独裁者中，排名前六的人格缺陷都相同（尽管有不同顺序），同时在精神分裂症、精神失常等方面都有较为严重的症状。&lt;/p&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveGkvamgvb3EveGlqaG9x
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveGkvamgvb3EveGlqaG9x
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveGkvamgvb3EveGlqaG9xLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveGkvamgvb3EveGlqaG9xLnBuZw==" /&gt;
 &lt;p&gt;随后的比较发现，金正日和萨达姆的性格更为类似（性格特征相关系数达到0.67），而金正日与希特勒的性格特征相关系数只有0.2。金正日和萨达姆的施虐倾向都是他们最严重的人格缺陷，程度也几乎相同：在统计上，比正常人平均值高出3个以上的标准差！&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="id4"&gt;
@@ -1014,9 +826,7 @@ LnBuZw==
 &lt;h1&gt;在冬天回想一个非凡的女人&lt;/h1&gt;
 &lt;p&gt;拥有双子宫双阴道，乍一听是不是像双卡双待手机一样高端？那要看你如何看待这个问题。也许对于老公来说，会感觉自己娶了两个老婆。但对女性来说，事实则可能没有这么美好。&lt;/p&gt;
 &lt;p&gt;双阴道又叫阴道纵膈，是阴道畸形的一种，常常是由于先天性胚胎期发育异常而引起的。除了阴道纵隔，较为常见的阴道畸形还包括阴道横隔、阴道斜隔、先天性无阴道等。阴道纵隔为双侧副中肾管会合后，其中隔未消失或未完全消失所致。有完全纵隔和不完全纵隔两种。完全纵隔形成双阴道，常合并双宫颈双子宫，我曾经遇到的这位患者即是如此。&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbWwvOHAvaWYvbWw4cGlm
-LnBuZw==
- alt="图为双阴道双子宫畸形 图片来自 www.glowm.com" /&gt;&lt;p class="document-figcaption"&gt;图为双阴道双子宫畸形 图片来自 www.glowm.com&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbWwvOHAvaWYvbWw4cGlmLnBuZw==" alt="图为双阴道双子宫畸形 图片来自 www.glowm.com" /&gt;&lt;p class="document-figcaption"&gt;图为双阴道双子宫畸形 图片来自 www.glowm.com&lt;/p&gt;&lt;/div&gt;
 &lt;/div&gt;
 &lt;div class="section" id="id2"&gt;
 &lt;h1&gt;条条大路通罗马？&lt;/h1&gt;
@@ -1094,16 +904,10 @@ LnBuZw==
 &lt;h1&gt;“大二学生”和其他人有多不同？&lt;/h1&gt;
 &lt;p&gt;如果将来自非西方世界的人和美国人做比较，我们就会发现二者在许多看似与心理学毫不相关的领域里——比如视觉感知、公平性、合作意识、空间推理、道德论证、思考方式甚至是智商的遗传性，都存在极大差异。在所有这些方面，美国大学生不止是和其他人不同，而且是迥然相异。正如亨利希和其同事总结的那样：虽然“这一亚人群对于人类来说极其缺乏代表性”，但是，他们还是被大多数研究者当做研究人类本质的对象。&lt;/p&gt;
 &lt;p&gt;我们不妨举个“视觉感知”的例子，来看看美国大学生和世界上其他人群究竟有多么不同。请观察下图中a、b两条水平线段，你能说出这它们中哪一条更长吗？&lt;/p&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdmovNzQvaGovdmo3NGhq
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdmovNzQvaGovdmo3NGhq
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdmovNzQvaGovdmo3NGhqLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdmovNzQvaGovdmo3NGhqLnBuZw==" /&gt;
 &lt;p&gt;如果你认为b线段更长，那么，你和许多美国人（包括大学生和儿童）的看法是一样的。而正如你可能猜到的那样，这两条线段实际上是一样长的，这一错觉被称为“穆勒-莱尔错觉”（Müller-Lyer Illusion）。该现象以德国精神病学家弗朗茨•卡尔•穆勒-莱尔命名，他在1889年第一个发现了它。&lt;/p&gt;
 &lt;p&gt;那么这一错觉就具有可以推广到全人类的普适性吗？如果你将两幅图展示给很多非西方社会（特别是那些狩猎采集社会）的人看，他们很可能会说这两条线段的长度并无不同。心理学家马歇尔•西格尔（Marshall H. Segall）在1966年所做的一系列跨文化实验中进行了这样一个尝试：他尽量延长线段a，直到实验对象认为这两条线段长度相等为止。实验结果请见下图。&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZWYvaXAvNHcvZWZpcDR3
-LnBuZw==
- alt="16个不同社会群体的穆勒-莱尔错觉强度对比图。（2010年亨利希等人重制）" /&gt;&lt;p class="document-figcaption"&gt;16个不同社会群体的穆勒-莱尔错觉强度对比图。（2010年亨利希等人重制）&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZWYvaXAvNHcvZWZpcDR3LnBuZw==" alt="16个不同社会群体的穆勒-莱尔错觉强度对比图。（2010年亨利希等人重制）" /&gt;&lt;p class="document-figcaption"&gt;16个不同社会群体的穆勒-莱尔错觉强度对比图。（2010年亨利希等人重制）&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;上图的纵轴表示“主观对等点（PSE）”，是人们认为线段a和b相等的时候a达到的实际长度。这一变量可以用于衡量不同社会群体的穆勒-莱尔错觉强度。正如该图所示，美国人（图表标签为“Evanston（埃文斯顿）”——西格尔正是在那里，对伊利诺伊州西北大学的学生做了这个实验）的穆勒-莱尔错觉强度高居榜首——直到线段a比b长1/5的时候，他们才认为二者相等。继他们之后的是约翰内斯堡的南非白人。与之截然相反的是南非卡拉哈里沙漠的桑人（San foragers，或称“布希曼人（Bushmen）”或“巴塞尔瓦人（Basarwa）”。电影《上帝也疯狂》曾经描述过他们的生活——译者注），他们几乎完全不受穆勒-莱尔错觉的影响。而该跨文化研究所覆盖的其他大多数社群受到的穆勒-莱尔错觉的影响也非常轻微。&lt;/p&gt;
 &lt;p&gt;那么，为什么美国人如此容易受到穆勒-莱尔错觉的影响呢？这大概是环境所致。大多数美国人生长于一个充斥着大量由水平直线和直角组成的现代建筑的环境中。因此，美国儿童（可以推广为高度工业化国家的大多数儿童）的大脑逐渐适应了这一环境，凭此做光学校准。然而，桑人和其他小规模的狩猎采集社群并没有这样一个工业化环境，所以，他们的大脑也不会受这一错觉的影响。
 在心理学界所谓的“族属生物学推理”（folkbiological reasoning）中，也能找到类似的现象。认知科学家通过考察来自美国城市中心区（也是大多数大学的集中地）的儿童，发展出一个颇具影响力的发育理论。该理论称，儿童在7-10岁之间会发生认知变化。正如亨利希和他的同事们在论文中提到的那样：&lt;/p&gt;
@@ -1137,18 +941,14 @@ LnBuZw==
 &lt;h1&gt;“O兄弟”的完美犯罪&lt;/h1&gt;
 &lt;p&gt;2009年2月25日清晨，三个戴着面具的男人洗劫了德国著名的奢侈品店卡迪威（Kaufhaus des Westens），抢走了价值650万欧元的名表和珠宝。警方随后在犯罪现场找到一只凶嫌遗留下的手套，就在大家以为这起重大抢劫案即将告破的时候，不可思议的事情发生了——手套上提取的DNA信息指向了两个人。&lt;/p&gt;
 &lt;p&gt;他们就是哈桑和阿巴斯（Hassan and Abbas O.），一对DNA几乎完全吻合的双胞胎兄弟。这下，德国警方可傻了眼，这对“O兄弟”的DNA如此相似，以至于现有的分析技术根本无法辨别出两人，到底是哪一个留下了那只手套，谁也无从知晓。&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdzUvdHgvcGQvdzV0eHBk
-LnBuZw==
- alt="O兄弟偷窃的珠宝。图：masrstars.com" /&gt;&lt;p class="document-figcaption"&gt;O兄弟偷窃的珠宝。图：masrstars.com&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdzUvdHgvcGQvdzV0eHBkLnBuZw==" alt="O兄弟偷窃的珠宝。图：masrstars.com" /&gt;&lt;p class="document-figcaption"&gt;O兄弟偷窃的珠宝。图：masrstars.com&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;德国法律规定，每一名嫌疑人都必须被单独证明有罪，否则他就是无辜的。如此一来，警方连羁押二人的权利也没有。哈桑和阿巴斯很快便被无罪释放了，尽管他们很有可能都参与了这起犯罪。而由于德国法律规定，被裁定无罪的嫌犯名字不得对外公布，所以这对“O兄弟”的真实身份也成了一个谜。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="id1"&gt;
 &lt;h1&gt;盗猎兄弟福克斯&lt;/h1&gt;
 &lt;p&gt;不过双胞胎作案也并非万无一失，英国双胞胎阿尔伯特•埃比尼泽•福克斯（Albert Ebenezer Fox ）和埃比尼泽•阿尔伯特•福克斯（Ebenezer Albert Fox ）就是一对典型例子。&lt;/p&gt;
 &lt;p&gt;别的不说，光听听这名字，就知道这对兄弟关系纠结有多深了。身高1.63米的埃比尼泽•阿尔伯特本是个快活的小个子，顶着个亮亮的光头再蓄点灰白胡子。麻烦在于，他兄弟阿尔伯特•埃比尼泽跟他一模一样。据说，辨别这两人的困扰从二人一出生就开始了，他们的老爸先给哥哥绑了条蓝色的缎带，又给另一个绑了条红色的，结果后来不知怎的搞混了颜色，就再也分不清谁是谁了。&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYm8vZGQvMWsvYm9kZDFr
-LnBuZw==
- alt="福克斯兄弟。图：Wikipedia" /&gt;&lt;p class="document-figcaption"&gt;福克斯兄弟。图：Wikipedia&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYm8vZGQvMWsvYm9kZDFrLnBuZw==" alt="福克斯兄弟。图：Wikipedia" /&gt;&lt;p class="document-figcaption"&gt;福克斯兄弟。图：Wikipedia&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;不过，这倒正好称了他俩的心意。尽管家教良好，福克斯兄弟长大却都成了臭名昭著的偷猎者，在斯蒂夫尼奇 地区广泛盗猎。在多年的犯罪生涯中，他们从不一起行动。这样，哪个如果不幸撞见巡查的警卫队，另一个刚好提供不在场证明。&lt;/p&gt;
 &lt;p&gt;兄弟二人互打掩护撞骗多年，不过，即便真的狡猾如狐狸，也总有栽跟头的时候，他们的诡计最后被爱德华•亨利爵士识破。由于同卵双胞胎的表现型不同，所以亨利爵士得以采用指纹识别技术把两人区别开来，成功将狐狸兄弟收监入狱。&lt;/p&gt;
 &lt;p&gt;虽然都是同年同月同日生，却没有哪对双胞胎可以保证同年同月同日死。埃比尼泽•阿尔伯特死于1926年，而阿尔伯特•埃比尼泽整整比他晚了11年，没有了兄弟的配合，双胞胎逍遥法外的戏码再也无法上演。&lt;/p&gt;
@@ -1158,9 +958,7 @@ LnBuZw==
 &lt;p&gt;论资质，克雷（Kray）家的雷金纳德（Reginald Kray）和罗纳德（Ronald Kray）俩兄弟算得上是双胞胎罪犯界的泰山极拍档了。回溯到上世纪五六十年代，整个伦敦的东区都是这对双胞胎罩着的。两兄弟的业务范围非常广泛，从持械抢劫到暴力袭击，从收保护费到走私军火，再算上两宗谋杀，可谓无恶不作。&lt;/p&gt;
 &lt;p&gt;K家的这对双胞胎兄弟长相一样，个性相似，在每个人生的十字路口上都保持着步调一致。学生时代，二人都表现出惊人的暴力倾向，在学校里人人敬而远之。随后他们受其祖父的影响，又双双当上了业余拳击手——据他们自己说，在19岁正式成为职业赛手前，兄弟俩谁都没输过一场比赛。&lt;/p&gt;
 &lt;p&gt;与此同时，双胞胎对他们潜在的终生事业也没有丝毫怠慢——最终，堆积成山的犯罪记录断送了他们作为拳击手的锦绣前程，也使兄弟二人彻底明确了人生的方向，携手踏上了职业罪犯的不归路。他们买下了伦敦一家夜总会，如火如荼地做上了全职的恶人。&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbWQvNG8vdWcvbWQ0b3Vn
-LnBuZw==
- alt="克雷兄弟。图：Wikipedia" /&gt;&lt;p class="document-figcaption"&gt;克雷兄弟。图：Wikipedia&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbWQvNG8vdWcvbWQ0b3VnLnBuZw==" alt="克雷兄弟。图：Wikipedia" /&gt;&lt;p class="document-figcaption"&gt;克雷兄弟。图：Wikipedia&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;不过，如果在1960年的街头随机捉一个路人甲，向他打听K家兄弟是何许人也，他最先蹦出嘴巴的字眼大概是“多金”、“迷人”和“社交名流”。两兄弟在闲暇之余，把夜总会也经营得风声水起，作为老板，他们结识了一大堆当时的名媛士绅和影星歌星，在伦敦的社交界广受欢迎。他们黑白两路通杀，还频繁出入于商界、政界跟各大娱乐场合中，留下了不少有派头的照片。难怪二人在自传中这样骄傲地总结他们的丰功伟绩：“60年代，这是属于我们的全盛时期¬¬——披头士和滚石统治着流行音乐、卡比纳比街（Carnaby Street）统治着时尚界，而我们兄弟统治着伦敦……我们叱咤风云、无人匹敌。”&lt;/p&gt;
 &lt;p&gt;然而，月盈则亏的老话绝对不是乱讲，60年代是K家双胞胎的巅峰，也是必然的转折。就像堕落进深渊的高森市唤起了蝙蝠侠，K家兄弟也招来了他们命里的克星——苏格兰场警局的谋杀重案组。在漫长艰苦的证据搜罗之后，警方终于在1968年将两兄弟捉拿归案。双胞胎最终被判处终生监禁，一段罪恶的黄金时代随之终结了。&lt;/p&gt;
 &lt;p&gt;根据瑞典学者的一项研究，双胞胎有相互模仿行为的倾向。尤其对于同卵双胞胎来说，相似的成长环境、教育程度和周围人的态度，都会让他们不自觉地形成一种根深蒂固的求同意识，正如上文提及的K家兄弟。他人就是自身的投射，对于双胞胎而言，可能尤其如此吧。&lt;/p&gt;
@@ -1227,11 +1025,7 @@ LnBuZw==
 
 </description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">宅大大王</dc:creator><guid>http://www.guokr.com/article/81160/</guid></item><item><title>“大风车”有助农作物生长 ？
 </title><link>http://www.guokr.com/article/81159/</link><description>&lt;div class="document"&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva2kvODkvd2cva2k4OXdn
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva2kvODkvd2cva2k4OXdn
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva2kvODkvd2cva2k4OXdnLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva2kvODkvd2cva2k4OXdnLnBuZw==" /&gt;
 &lt;p&gt;美国的农作物种植带正好也是它的主要风带，这条地带是美国风能开发的理想区域，一项新的研究显示，两者的地域交叉可能对农作物有益。&lt;/p&gt;
 &lt;p&gt;在过去的十年里，风能产业蓬勃发展，我们经常能在农田附近看到风力涡轮机。因此农民和研究者就想知道，转动的叶片对玉米、大豆和其他农作物会有什么影响呢？在许多地方的传统农业里，农民总会在田地两旁种植一些树木，这样做可以减慢风速并使空气发生扰动，对农作物是有利的。于是研究人员就思考风力涡轮机对农作物是否有相似的影响呢？结果证明，它可能确实有助农作物生长。研究者在12月7日于旧金山举行的的美国地球物理联盟 (American Geophysical Union) 会议上发布了初步的研究结果。&lt;/p&gt;
 &lt;p&gt;风力涡轮机最显著的一个作用就是混合空气，从而给农作物带来更多的二氧化碳。它对农作物的其他一些影响就要复杂点了，比如，在引起周围空气流动的同时，风力涡轮机能够降低夜晚沉积在叶片上的露珠量，这有助于减小一些农作物病害，比如由真菌引起的疾病的风险。&lt;/p&gt;
@@ -1279,13 +1073,9 @@ LnBuZw==
 &lt;div class="section" id="id9"&gt;
 &lt;h1&gt;小抄来了：&lt;/h1&gt;
 &lt;p&gt;&lt;strong&gt;表1 表面双层脂质组分&lt;/strong&gt;&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZ2Mvd3MvdHcvZ2N3c3R3
-LnBuZw==
- alt="皮脂组成表[5]。生理性脂质（神经酰胺、胆固醇、脂肪酸）不但可以保湿还可以帮助皮肤的自我修护。" /&gt;&lt;p class="document-figcaption"&gt;皮脂组成表[5]。生理性脂质（神经酰胺、胆固醇、脂肪酸）不但可以保湿还可以帮助皮肤的自我修护。&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZ2Mvd3MvdHcvZ2N3c3R3LnBuZw==" alt="皮脂组成表[5]。生理性脂质（神经酰胺、胆固醇、脂肪酸）不但可以保湿还可以帮助皮肤的自我修护。" /&gt;&lt;p class="document-figcaption"&gt;皮脂组成表[5]。生理性脂质（神经酰胺、胆固醇、脂肪酸）不但可以保湿还可以帮助皮肤的自我修护。&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;&lt;strong&gt;表2 天然保湿因子组分&lt;/strong&gt;&lt;/p&gt;
-&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveDgvYnYvMGgveDhidjBo
-LnBuZw==
- alt="皮肤中的天然保湿因子组分[5]。" /&gt;&lt;p class="document-figcaption"&gt;皮肤中的天然保湿因子组分[5]。&lt;/p&gt;&lt;/div&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveDgvYnYvMGgveDhidjBoLnBuZw==" alt="皮肤中的天然保湿因子组分[5]。" /&gt;&lt;p class="document-figcaption"&gt;皮肤中的天然保湿因子组分[5]。&lt;/p&gt;&lt;/div&gt;
 &lt;p&gt;简单地说，甘油、乳酸、尿素、神经酰胺、吡咯酮酸钠、角鲨烷、胆固醇、脂肪酸这些成分都是可以考虑选择的。甘油的保湿浓度一般不标出，会在10%以内。乳酸在5% -10%，尿素在5%-10%。&lt;/p&gt;
 &lt;p&gt;选择了有益的成分，同时也要避免刺激性的成分。特别是皮肤干燥的状况下，更容易敏感。比如香料、酒精都会容易引起敏感，使皮肤干燥感加重。香料引起的敏感的几率最大&lt;a class="footnote-reference" href="#id23" id="id10"&gt;[6]&lt;/a&gt;，且对皮肤没有任何好处，只是取悦使用者的嗅觉。&lt;/p&gt;
 &lt;p&gt;护肤品中很多植物萃取其实就是香料的作用，一样会引起过敏。它们在成分表中有时统称香精，有时会叫：香茅醇、苧烯、香叶醇、丁香酚、金合欢醇、茴香醇、肉桂醛、柠檬醛等，其实都是香料。&lt;/p&gt;
@@ -1385,11 +1175,7 @@ LnBuZw==
 &lt;p&gt;紫外线，特别是UVA会造成皮肤的光老化。光诱导老化所造成的皮肤伤害不同于自然老化，而且会与自然老化叠加。[3]皮肤暴露在日光几个小时后，UVA会氧化皮肤中已存在的黑色素。皮肤会发红，肿胀并出现疼痛，极端的病例中会出现灼伤。24小时后，皮肤会产生保护性反应，大量合成黑色素，表皮层中出现组织病变，导致产生异常的“晒伤细胞”，这就是光老化的过程。[4]因此长期户外工作的人看上去显老。&lt;/p&gt;
 &lt;p&gt;黑色皮肤中的真黑色素可吸收90%的UVB，能提供比浅色皮肤中发现的褐色素更强的保护。因此，肤色越浅越要注意防晒。针对皮肤问题，世界卫生组织专门开展了INTERSUN计划，希望能提高公众对皮肤问题的关注度和知识水平、降低皮肤癌发病率。[5]&lt;/p&gt;
 &lt;p&gt;（附表）人类皮肤的光表型&lt;/p&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOXYvNGIvcXgvOXY0YnF4
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOXYvNGIvcXgvOXY0YnF4
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOXYvNGIvcXgvOXY0YnF4LnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOXYvNGIvcXgvOXY0YnF4LnBuZw==" /&gt;
 &lt;p&gt;&lt;em&gt;此表由欧莱雅中国研发和创新中心根据世界卫生组织资料编制&lt;/em&gt; [6]&lt;/p&gt;
 &lt;p&gt;参考资料&lt;/p&gt;
 &lt;div class="line-block"&gt;
@@ -1527,68 +1313,40 @@ LnBuZw==
 
 </description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">ZC</dc:creator><guid>http://www.guokr.com/article/81145/</guid></item><item><title>IBM：5年内实现脑控智能手机
 </title><link>http://www.guokr.com/article/81067/</link><description>&lt;div class="document"&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva24veG8vOTcva254bzk3
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva24veG8vOTcva254bzk3
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva24veG8vOTcva254bzk3LnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva24veG8vOTcva254bzk3LnBuZw==" /&gt;
 &lt;p&gt;从2006年开始，IBM每年都要拟一份“5-in-5”的报告，提出近五年内可能实现的五项尖端科技（ &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/4270/"&gt;去年的报告&lt;/a&gt; )。每项预测乍听起来都有点疯狂，像是科幻小说里的情节，然而第一个五年已经终结的时候，IBM已经用科技成果证明了自身的前瞻性和行动力。比如，2006年，预测远程手术可能实现。2008年，预测语音语义的识别会成为主流交互手段之一。&lt;/p&gt;
 &lt;p&gt;最新发布的2011年度“5-in-5”报告书中，其中一项即为：2017年之前，不需动手不需动口，只需“起心动念”，我们便能如愿操纵智能手机。到那时，用户只需要戴一个类似于棒球帽的简单装备，就可以实现与手机等智能终端的心有灵犀。&lt;/p&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd20vc2svYm0vd21za2Jt
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd20vc2svYm0vd21za2Jt
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd20vc2svYm0vd21za2JtLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd20vc2svYm0vd21za2JtLnBuZw==" /&gt;
 &lt;p&gt;一个多月前，一项名为“Project Black Mirror”项目视频风靡网络，号称通过脑袋上贴几张“读脑贴片”就可以读取用户大脑中所想的人名，从而来控制iPhone的Siri，实现智能拨号。然而，随之就有专家明确指出视频中的破绽，揭穿这个“挂羊头卖狗肉”的视频纯属恶作剧。&lt;/p&gt;
 &lt;embed src="http://www.tudou.com/v/JjyPsGmjtKk/v.swf" type="application/x-shockwave-flash" allowscriptaccess="sameDomain" allowfullscreen="true" wmode="opaque" width="480" height="400"&gt;&lt;/embed&gt;&lt;p&gt;巧合的是，该视频中展现的人机交互方式，恰恰与IBM的预测如出一辙。那么，IBM何来如此坚定的信心，认为五年内恶作剧必将成为现实呢？&lt;/p&gt;
 &lt;p&gt;正如IBM发布的报告书中所言，早在2008年底，IBM公司与美国的Emotiv公司就已经联合研发并发布了世界第一套脑波控制游戏的系统——Emotive Epoc头带设备。这款设备可以通过非入侵式的脑电图仪（EEG）获得脑波信息，进而采用机器学习的方法分析出每个使用者大脑神经元电讯号的特定表达模式，将其与特定的简单行为或情感表达对应起来，再以计算机算法进一步解读，最后将其转化成电脑或智能终端所能理解的讯息，实现相应的操作。经过近几年的研发和改进，目前Epoc已可以通过大脑控制鼠标的操控，可以对特定受控物体实现“推”和“举”的操作，可以读取用户的“高兴”“难过”或者“平静”的情感表达。目前，Epoc的市场价格为299美元，已在游戏控制器的市场上占有一席之地。&lt;/p&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3kvc3MvNm0vY3lzczZt
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3kvc3MvNm0vY3lzczZt
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3kvc3MvNm0vY3lzczZtLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3kvc3MvNm0vY3lzczZtLnBuZw==" /&gt;
 &lt;p&gt;有了前期的研究基础，IBM公司中参与“Epoc”项目研发的科学家们断言，继体感控制和语音控制之后，脑波控制一定会在游戏和娱乐产业中大放异彩。同时，在临床医学方面，这项研究还将对大脑康复治疗和孤独症患者的研究与治疗过程中有极大帮助。更值得一提的是，IBM立志于在五年内，率先实现脑电波控制手机的拨号、发短信、发邮件等基本交互功能。&lt;/p&gt;
 &lt;p&gt;IBM如此不遗余力地要抢占脑波控制的市场先锋，或许也因为该产品与IBM公司长期以来的理念不谋而合——“Just Thinking”。&lt;/p&gt;
 &lt;p&gt;或许，IBM的预测并不仅仅提出一种发展前景，更重要的是凭借公司的声誉吸引了全球研发者的目光，引领了主流的研究方向，才可能促使各项预期得以实现。&lt;/p&gt;
 &lt;p&gt;今年的报告书中，除了“脑波控制”之外，还有那四项科技前景值得我们期待呢。&lt;/p&gt;
 &lt;div class="section" id="diy"&gt;
 &lt;h1&gt;1. 再生能源也可以DIY&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvN2sva2cvdDYvN2trZ3Q2
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvN2sva2cvdDYvN2trZ3Q2
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvN2sva2cvdDYvN2trZ3Q2LnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvN2sva2cvdDYvN2trZ3Q2LnBuZw==" /&gt;
 &lt;p&gt;我们都知道，能量可以相互转化。所以，任何会动的东西都有制造能源的潜力。比如：跑鞋、自行车，甚至是水管里的流水，都有可能用来制造再生能源，以用于房子、办公室和城市的能源。&lt;/p&gt;
 &lt;p&gt;设想一下，只需要在电动自行车的轮辐上加一个小装备，就可以将车轮转动的动能转化为驱动车辆的电能。这样，就不需要再担心车辆充电的问题了，低碳环保地骑着电瓶车驰骋天下也可以成为现实。&lt;/p&gt;
 &lt;p&gt;IBM公司在爱尔兰就有这样一组研究人员，专注于将海洋中波浪运动产生的动能转化为电能，实现绿色供电。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="id2"&gt;
 &lt;h1&gt;2. 和难记的密码说再见&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcnEvNDMvbG8vcnE0M2xv
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcnEvNDMvbG8vcnE0M2xv
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcnEvNDMvbG8vcnE0M2xvLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcnEvNDMvbG8vcnE0M2xvLnBuZw==" /&gt;
 &lt;p&gt;密码这个东西越来越不讨人喜欢了。设置得太过复杂，以至于自己都会忘记。对此，IBM的科学家称，五年里，你的身体就是个人身份的证明。&lt;/p&gt;
 &lt;p&gt;我们都知道，人体中诸多特征都可以构成独一无二的生物数据，如面部识别、虹膜扫描和声音语调特征，只需要将这些特征组合起来，就可以打造出“非你莫属”的世上最安全密码。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="id3"&gt;
 &lt;h1&gt;3. 信息获取鸿沟不复存在&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMzMvamcvNWcvMzNqZzVn
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMzMvamcvNWcvMzNqZzVn
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMzMvamcvNWcvMzNqZzVnLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMzMvamcvNWcvMzNqZzVnLnBuZw==" /&gt;
 &lt;p&gt;信息化社会中，获得信息的层次和速度对财富增长有决定性作用。所以说，财富的垄断者也一定是信息的垄断者。但是未来五年里，随着智能移动终端设备的普及，这种信息获取的鸿沟将不复存在。&lt;/p&gt;
 &lt;p&gt;据预测，五年内智能手机的销售量将达到56亿台，这意味着全球70亿人口中的80%都可以通过移动终端及时获取信息。届时，在农田里劳作的农民，即使目不识丁，也可以通过手机和语音技术的帮助，得到最尖端的农业科技帮助，把握住最佳的播种时间，合理利用天气等因素，从而提高农业产量。同样的情况也将在移动商务和远程医疗等方面得以实现。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="id4"&gt;
 &lt;h1&gt;4. “垃圾邮件”也能变废为宝&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZHQvYmcvNmIvZHRiZzZi
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZHQvYmcvNmIvZHRiZzZi
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZHQvYmcvNmIvZHRiZzZiLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZHQvYmcvNmIvZHRiZzZiLnBuZw==" /&gt;
 &lt;p&gt;我们经常都会被垃圾邮件所困扰。但如果偶尔翻翻垃圾邮件箱，也能找出眼前一亮的信息。IBM的研究团队抓住了这一现象，将在五年内推出为每位用户量身打造的“智能邮箱”，可以通过分析用户的使用习惯、往来的邮件和近期所关心的话题等信息，智能分析出该用户最近的工作、出行和理财等方面的计划与行为。如若到来的垃圾邮件中与有用户行为相关的信息，邮箱便能够自动提取信息，将其发送到用户的手机上，或是打造成日程表供用户参考。&lt;/p&gt;
 &lt;p&gt;想想看，当身在上海的你正在与芝加哥的客户商谈会晤安排时，手机上就收到了最新的航空公司打折信息，甚至标注了上海到芝加哥的推荐路线与价格比较，是不是很贴心呢？其实这些功能，都通过对邮箱中垃圾邮件进行有效的深度数据分析和数据挖掘均可得以实现。&lt;/p&gt;
 &lt;embed src="http://www.tudou.com/v/H_lxOMGmEzU/v.swf" type="application/x-shockwave-flash" allowscriptaccess="sameDomain" allowfullscreen="true" wmode="opaque" width="480" height="400"&gt;&lt;/embed&gt;&lt;div class="line-block"&gt;
@@ -1603,11 +1361,7 @@ LnBuZw==
 &lt;p&gt;这是一个非常有意思的问题。果壳问答团队认为，在缺乏实验结论以及直接相关的研究成果的前提下，想要回答这个问题非常困难。但我们可以通过一些基本线索来推导出这个问题可能的答案。&lt;/p&gt;
 &lt;p&gt;首先我们来看一下我们人类胃部的结构吧，见下图：&lt;/p&gt;
 &lt;p&gt;正常情况下，我们很开心地喝了一瓶可乐，幽门（胃的下方出口）会把它们暂时留在胃里，可乐中的二氧化碳在胃蠕动的帮助下逐渐释放，然后随着胃内气压增大，贲门（胃的上方出口）打开，二氧化碳喷涌而出，通过食道冲出口鼻，我们就……打了一个嗝。&lt;/p&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3QvbjUvdGkvY3RuNXRp
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3QvbjUvdGkvY3RuNXRp
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3QvbjUvdGkvY3RuNXRpLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3QvbjUvdGkvY3RuNXRpLnBuZw==" /&gt;
 &lt;p&gt;但是如果把一个人倒吊起来，事情就变得不那么简单了。我们得详细追究一下到底喝了多少可乐。&lt;/p&gt;
 &lt;div class="section" id="id1"&gt;
 &lt;h1&gt;喝得不多的情况下&lt;/h1&gt;
@@ -1697,11 +1451,7 @@ LnBuZw==
 
 </description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/1301/</guid></item><item><title>音乐圣诞树
 </title><link>http://www.guokr.com/article/80945/</link><description>&lt;div class="document"&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva20vYTEvNG0va21hMTRt
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva20vYTEvNG0va21hMTRt
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva20vYTEvNG0va21hMTRtLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva20vYTEvNG0va21hMTRtLnBuZw==" /&gt;
 &lt;table class="docutils field-list" frame="void" rules="none"&gt;
 &lt;col class="field-name" /&gt;
 &lt;col class="field-body" /&gt;
@@ -1742,11 +1492,7 @@ LnBuZw==
 &lt;/div&gt;
 &lt;div class="section" id="id2"&gt;
 &lt;h1&gt;&lt;a class="toc-backref" href="#id8"&gt;1&amp;nbsp;&amp;nbsp;&amp;nbsp;材料和工具&lt;/a&gt;&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZ3gvcW4vdnovZ3hxbnZ6
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZ3gvcW4vdnovZ3hxbnZ6
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZ3gvcW4vdnovZ3hxbnZ6LnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZ3gvcW4vdnovZ3hxbnZ6LnBuZw==" /&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;○ 3mm 七彩自动闪烁LED 10个（快闪）&lt;/div&gt;
 &lt;div class="line"&gt;○ 3mm七彩自动闪烁LED 10个（慢闪）&lt;/div&gt;
@@ -1755,11 +1501,7 @@ LnBuZw==
 &lt;/div&gt;
 &lt;blockquote&gt;
 所有零件都能从淘宝购买到。&lt;/blockquote&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva3gvMWIvbmEva3gxYm5h
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva3gvMWIvbmEva3gxYm5h
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva3gvMWIvbmEva3gxYm5hLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva3gvMWIvbmEva3gxYm5hLnBuZw==" /&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;○ 单芯绝缘细铜线（这种线方便在中部剥皮）大约3m&lt;/div&gt;
 &lt;div class="line"&gt;○ 5.6k电阻 20个&lt;/div&gt;
@@ -1803,36 +1545,20 @@ LnBuZw==
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;使用自动闪烁的七彩LED与单片机控制闪烁二极管的最大好处，就是可以少引很多线，只需要将每个LED串联上5.6k的限流电阻（视所用电源而定，5v的话大约400欧~1k就够了，我为了增加电池的续航时间增大了电阻），然后直接连到电源线和地线上。&lt;/div&gt;
 &lt;/div&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcGovOHEvMDAvcGo4cTAw
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcGovOHEvMDAvcGo4cTAw
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcGovOHEvMDAvcGo4cTAwLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcGovOHEvMDAvcGo4cTAwLnBuZw==" /&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;将20个七彩LED打乱顺序随机焊接到电源线和地线上，间距大约5cm。快闪和慢闪LED的组合使彩灯串的光色变换更为随机。&lt;/div&gt;
 &lt;div class="line"&gt;如图所示，将两根单芯绝缘细铜线在中间用剥线钳剥开一小段皮，然后将LED正极接电源线，LED的负极接电阻，电阻的另一端接地线，接触点用烙铁焊牢。&lt;/div&gt;
 &lt;/div&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdmQvcXAvcWIvdmRxcHFi
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdmQvcXAvcWIvdmRxcHFi
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdmQvcXAvcWIvdmRxcHFiLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdmQvcXAvcWIvdmRxcHFiLnBuZw==" /&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;焊完以后将两根线扭缠起来固定LED。不放心的话还可以滴点热熔胶固定。这时候小心些，不要把导线弄断或者弄脱焊。&lt;/div&gt;
 &lt;/div&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMnEvN3MvZ3UvMnE3c2d1
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMnEvN3MvZ3UvMnE3c2d1
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMnEvN3MvZ3UvMnE3c2d1LnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMnEvN3MvZ3UvMnE3c2d1LnBuZw==" /&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;做好的彩灯串，目测大约1m多一点长。具体的长度和LED间隔可以参照圣诞树的尺寸自定。&lt;/div&gt;
 &lt;/div&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOTQvcXEvbWYvOTRxcW1m
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOTQvcXEvbWYvOTRxcW1m
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOTQvcXEvbWYvOTRxcW1mLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOTQvcXEvbWYvOTRxcW1mLnBuZw==" /&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;用前先试一把，可以看到每个LED的发光并不同步。&lt;/div&gt;
 &lt;/div&gt;
@@ -1842,33 +1568,17 @@ LnBuZw==
 &lt;/div&gt;
 &lt;div class="section" id="id5"&gt;
 &lt;h1&gt;&lt;a class="toc-backref" href="#id11"&gt;4&amp;nbsp;&amp;nbsp;&amp;nbsp;改装圣诞树&lt;/a&gt;&lt;/h1&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvNHovb2QvOW0vNHpvZDlt
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvNHovb2QvOW0vNHpvZDlt
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvNHovb2QvOW0vNHpvZDltLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvNHovb2QvOW0vNHpvZDltLnBuZw==" /&gt;
 &lt;p&gt;首先先把买来的圣诞树拆开，可以看到塑料骨架和上面的绿色PVC箔片条。箔片条的中间是一根细铁丝，用来嵌入骨架上的齿间固定。&lt;/p&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcHgveWMvN2gvcHh5Yzdo
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcHgveWMvN2gvcHh5Yzdo
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcHgveWMvN2gvcHh5YzdoLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcHgveWMvN2gvcHh5YzdoLnBuZw==" /&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;把刚才做好的彩灯串缠上去，注意让LED沿四周分布均匀一点&lt;/div&gt;
 &lt;/div&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbDMvaDYvajcvbDNoNmo3
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbDMvaDYvajcvbDNoNmo3
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbDMvaDYvajcvbDNoNmo3LnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbDMvaDYvajcvbDNoNmo3LnBuZw==" /&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;点亮LED测试，看有没有LED在制作中断路之类。&lt;/div&gt;
 &lt;/div&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveW0vNTkvMHkveW01OTB5
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveW0vNTkvMHkveW01OTB5
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveW0vNTkvMHkveW01OTB5LnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveW0vNTkvMHkveW01OTB5LnBuZw==" /&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;把PVC箔片条原样缠回，看看效果。&lt;/div&gt;
 &lt;/div&gt;
@@ -1876,11 +1586,7 @@ LnBuZw==
 &lt;div class="line"&gt;接下来要安装电池和开关，如果圣诞树有中间的主干就只需要将电池用胶带捆在上面，但是这个框架是个中空的锥体，所以需要做个支撑平台。我在塑料框架里用强力胶粘上一根横梁，等待胶固化。然后把9v电池和按钮开关串联，按正负极接到电源线和地线上。这个接线太简单了，所以我想也不需要电路图什么的……&lt;/div&gt;
 &lt;div class="line"&gt;最后把电池用胶带缠到横梁上，点上一些胶固定。&lt;/div&gt;
 &lt;/div&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYTcvNnEvd2kvYTc2cXdp
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYTcvNnEvd2kvYTc2cXdp
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYTcvNnEvd2kvYTc2cXdpLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYTcvNnEvd2kvYTc2cXdpLnBuZw==" /&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
 &lt;/div&gt;
@@ -1888,17 +1594,9 @@ LnBuZw==
 &lt;div class="section" id="id6"&gt;
 &lt;h1&gt;&lt;a class="toc-backref" href="#id12"&gt;5&amp;nbsp;&amp;nbsp;&amp;nbsp;安装基座&lt;/a&gt;&lt;/h1&gt;
 &lt;p&gt;我对八音盒的仿红木外观很满意，所以打算直接将它用作基座。原先的八音盒盒盖上没有扣具，所以稍稍用力就能够翻开——我可不希望装在上面的圣诞树被一阵小风吹倒，或者随意一碰就翻，所以需要稍做改造。&lt;/p&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOGQvb3kvY2EvOGRveWNh
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOGQvb3kvY2EvOGRveWNh
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOGQvb3kvY2EvOGRveWNhLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOGQvb3kvY2EvOGRveWNhLnBuZw==" /&gt;
 &lt;p&gt;我在盒盖上粘了一个钢螺母，下面粘了一小块磁钢，做成了一个磁力搭扣。要用些力才能打开。&lt;/p&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva20vMWkveGQva20xaXhk
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva20vMWkveGQva20xaXhk
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva20vMWkveGQva20xaXhkLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva20vMWkveGQva20xaXhkLnBuZw==" /&gt;
 &lt;p&gt;最后将做好的圣诞树粘在八音盒上。9V电池的下方刚好是个平面，能够和八音盒的盒盖粘的很紧实。当然也可以考虑用一小段树枝两头分别粘在电池和盒盖上，模拟实木树干的效果。最后，把开关粘在树冠下一个不起眼的边角处。&lt;/p&gt;
 &lt;p&gt;原先我想把电池做成可替换式的，但是中间一时忽略将电池粘死了，也就只能将错就错。考虑9V电池的容量，在大约20mA的工作电流下可以工作10个小时左右，至少度过圣诞夜没有问题吧。如果能够从头开始的话我会考虑装上大容量锂电池和充电电路的，这样可以轻松达到30个小时的续航时间。&lt;/p&gt;
 &lt;div class="line-block"&gt;
@@ -1909,26 +1607,14 @@ LnBuZw==
 &lt;h1&gt;&lt;a class="toc-backref" href="#id13"&gt;6&amp;nbsp;&amp;nbsp;&amp;nbsp;大功告成&lt;/a&gt;&lt;/h1&gt;
 &lt;p&gt;各处的胶彻底固化之后，合上盒盖，整理一下箔片条盖住塑料骨架和灯串，圣诞树就大功告成了。
 做好以后，它长这样：&lt;/p&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva20vYTEvNG0va21hMTRt
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva20vYTEvNG0va21hMTRt
-LnBuZw==
- /&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOXUvOGkveWIvOXU4aXli
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOXUvOGkveWIvOXU4aXli
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva20vYTEvNG0va21hMTRtLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva20vYTEvNG0va21hMTRtLnBuZw==" /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOXUvOGkveWIvOXU4aXliLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOXUvOGkveWIvOXU4aXliLnBuZw==" /&gt;
 &lt;p&gt;黑暗处的彩灯效果。&lt;/p&gt;
 &lt;p&gt;、&lt;/p&gt;
 &lt;embed src="http://player.youku.com/player.php/sid/XMzM0OTY2NzE2/v.swf" type="application/x-shockwave-flash" allowscriptaccess="sameDomain" allowfullscreen="true" wmode="opaque" width="480" height="400"&gt;&lt;/embed&gt;&lt;div class="line-block"&gt;
 &lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
 &lt;/div&gt;
-&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYXEvdngvNmsvYXF2eDZr
-LnBuZw==
- src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYXEvdngvNmsvYXF2eDZr
-LnBuZw==
- /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYXEvdngvNmsvYXF2eDZrLnBuZw==" src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYXEvdngvNmsvYXF2eDZrLnBuZw==" /&gt;
 &lt;p&gt;把圣诞树装进一同网购的礼品袋，完工！&lt;/p&gt;
 &lt;div class="line-block"&gt;
 &lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
