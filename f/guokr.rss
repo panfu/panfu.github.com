@@ -1,0 +1,2274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"><channel><title>果壳网 guokr.com - 果壳网</title><link>http://www.guokr.com/</link><description>果壳网是一个泛科技主题网站，提供负责任、有智趣、贴近生活的内容，你可以在这里阅读、分享、交流、提问。果壳网致力于让科技兴趣成为人们文化生活和娱乐生活的重要元素。</description><language>zh-cn</language><lastBuildDate>Fri, 23 Dec 2011 11:23:41 -0000</lastBuildDate><item><title>CSDN数据库泄露！那些网站够安全吗？
+</title><link>http://www.guokr.com/article/81430/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;近日， &lt;a target="_blank" class="reference external" href="http://www.wooyun.org/bugs/wooyun-2010-03692"&gt;CSDN 社区网站数据库泄露&lt;/a&gt; ，近 600 万用户真实账号密码外泄。该事件横扫整个中文互联网，并且随后又爆出 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/post/81274/"&gt;多玩游戏 800 万用户资料被泄露&lt;/a&gt; ，另有传言人人网、开心网、天涯社区、世纪佳缘、百合网等社区都有可能成为黑客下一个目标。一时间人人自危，更换密码者无数。&lt;/p&gt;
+&lt;p&gt;这到底是怎么回事？用户信息是如何泄漏的？为什么一瞬间就有这么多密码被轻易获取，而一般的网站又是如何保护用户密码的？黑客和网站管理者之间，展开过怎样的密码攻防战？死理性派就此做了一番详细的介绍。&lt;/p&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h1&gt;黑客的目标：你的密码存在哪儿？&lt;/h1&gt;
+&lt;p&gt;很多人对这次事件都有一个疑问：网站把我的密码存在哪？&lt;/p&gt;
+&lt;p&gt;对于大部分网站，密码的存储和验证过程简单来说就是：用户输入密码，密码被传输到服务器，服务器将密码存储起来（注册）或和已经存储的密码比对（登录）。不论在哪个步骤，都有可能遭到黑客的攻击和入侵。本次事件的数据库泄露，就和第 3 个步骤相关。&lt;/p&gt;
+&lt;p&gt;一般来说，每个网站都有一个或多个专门存储密码的数据库。这些数据库通常并不能下载到。那黑客们是如何得到数据库的呢？&lt;/p&gt;
+&lt;p&gt;比较技术的方法是通过一些服务器返回的错误信息推断数据库的位置，例如“%5c大法”。它的原理是，故意进行一个错误的数据库访问，从错误信息中获取数据库真实地址，再通过这个地址下载数据库。但修补这个漏洞的方法也很简单，只要更改一下数据库出错时返回的错误信息就可以了。&lt;/p&gt;
+&lt;p&gt;有经验的软件管理员自然会对这种技术手段有所防范。但密码泄漏的途径其实不像想象中的那么“技术”：可能某个辞职员工偷偷带走了数据库；可能某台存储数据库的服务器染上了病毒；可能有人偷偷潜入了机房拷贝走了数据……总之，黑客会通过各种可能的手段获得存有用户名和密码的数据库，数据库泄露的危险总是存在的。&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMzEvdW8vMWgvMzF1bzFo
+LnBuZw==
+ alt="图片来源：XKCD" /&gt;&lt;p class="document-figcaption"&gt;图片来源：XKCD&lt;/p&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h1&gt;道高一尺：加密让数据库更安全&lt;/h1&gt;
+&lt;p&gt;数据库总有被黑客攻击的危险，那网站如何应对？众所周知，在本次事件当中，被泄露的 CSDN 数据库，用的是明文储存密码。顾名思义，明文密码就是直接将用户输入的密码存到数据库中。这种方式的安全性不言自明。&lt;/p&gt;
+&lt;p&gt;既然明文密码太危险，那不妨用加密密码。但怎么加密呢？这就要说到大名鼎鼎的哈希函数了。&lt;/p&gt;
+&lt;p&gt;哈希是一种从一到多（或从多到一）对应的函数，它的作用是将一个很大的集合映射到一个很小的集合。例如，我们可以设计一个哈希函数 h(x) = x % 100 （其中 % 表示取余数，如 4 % 3 = 1，8 % 2 = 0），这样我们就把所有的整数 x 映射到了一个 0 到 99 的有限集合中。而像 MD5 和 SHA-1 这些著名的算法，都是哈希函数。当然，和前面这个 h(x) 不同，它们的计算方法非常复杂，常常需要经过很多轮计算。&lt;/p&gt;
+&lt;p&gt;哈希一个很重要的作用是帮助查找。很容易看到，如果两个数 x &lt;sub&gt;1&lt;/sub&gt; 和 x &lt;sub&gt;2&lt;/sub&gt; 对应的哈希值 h( x &lt;sub&gt;1&lt;/sub&gt; ) 和 h( x &lt;sub&gt;2&lt;/sub&gt; ) 不相等，那么 x &lt;sub&gt;1&lt;/sub&gt; 和 x &lt;sub&gt;2&lt;/sub&gt; 也一定不相等。这样一来，我们就可以用两个对象的哈希值进行过滤。因为哈希值的集合比原始值的集合更小，所以比较哈希值的速度是很快的。&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvanUvaGcvc3YvanVoZ3N2
+LnBuZw==
+ alt="典型的哈希算法。 图片来源：维基百科" /&gt;&lt;p class="document-figcaption"&gt;典型的哈希算法。 图片来源：维基百科&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;而这个想法，也被应用于密码的保护上。实际上，无论是避免数据库泄露后的危险，还是出于对用户隐私保护的需要，现在大部分网站数据库存储的密码都不是明文，而是用户密码的哈希值，也就是所谓的加密密码。如果输入了一个错误的密码，它的哈希值就会有很大可能性与正确密码的哈希值不同，那么用哈希值代替密码进行比较也没有什么问题。另外，哈希的作用是将一个大集合映射到一个小集合，所以它的结果一定是不可逆的（因为从小集合到大集合的映射是一对多的映射）。这种不可逆性，使得理论上从哈希值找出原始密码成了一个不可能的任务，从而保护了密码。&lt;/p&gt;
+&lt;p&gt;但是，也会出现这种情况：两个不同的原始密码，它们的哈希值一样。这在密码学上被称作“碰撞”。碰撞是一个设计良好的哈希函数需要极力避免的，正因为如此，很多哈希函数的运算结果都很长，例如知名的 MD5 算法，它的运算结果包括了 128 位二进制数。试想一下，如果使用之前提到的哈希函数 h(x) = x % 100，随便输入一个密码，就有 1/100 的可能性验证通过，那还了得！好在现在流行的哈希函数，在这一点上做的还都还不错。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id4"&gt;
+&lt;h1&gt;魔高一丈：哈希不是万能的&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbG4vcWgvaXEvbG5xaGlx
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbG4vcWgvaXEvbG5xaGlx
+LnBuZw==
+ /&gt;
+&lt;p&gt;前面提到，哈希是不可逆的。那么使用哈希存储的密码，真的就安全了吗？如果你当真这么认为，那黑客就要在一旁偷偷地笑了——非也，非也！&lt;/p&gt;
+&lt;p&gt;事实上，即使数据库中的密码经过了哈希函数的加密，数据库泄露之后也会有很大的危险，尤其是当使用的哈希算法还是 MD5 和 SHA-1 这种已经流行很多年的“大众脸”时。确实，哈希本身并不可逆，但要注意的是，黑客并没多少兴趣知道原始密码：因为服务器验证密码时不需要原始密码。只要找到一个和数据库里存储的哈希值相同的密码，就可以用它轻松通过验证，这正是前面提到哈希函数要尽力避免碰撞的原因。&lt;/p&gt;
+&lt;p&gt;通常黑客手中，都会有一份很长的列表，称为“碰撞库”。碰撞库里存储的，是很多常用密码对应的各种哈希值。这里的“常用”，并不单单是指 “123456789” 这种“烂大街”的密码——事实上，任何不够长、只含字母或数字的类似于 “iloveyou” 这种由简单单词组成的密码，都可能出现在碰撞库中，现在黑客们生成的碰撞库的规模早已超出我们的想象。对于大部分常用密码，只要把泄漏出的哈希值放到碰撞库中比对一下，就可以找到一个产生碰撞的密码。&lt;/p&gt;
+&lt;p&gt;而滑稽的是，哈希算法极力要避免的碰撞在这里又给了黑客很大的方便：因为碰撞几率极低，如果一个哈希值存在于碰撞库里，那基本就可以确定库中对应的碰撞密码正是经过哈希加密前的真实密码！因此，那些用户名密码在各个网站都一成不变的用户们就悲剧了。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id5"&gt;
+&lt;h1&gt;并非束手无策：猜不出的哈希算法&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcGgvbG0vZmcvcGhsbWZn
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcGgvbG0vZmcvcGhsbWZn
+LnBuZw==
+ /&gt;
+&lt;p&gt;即便如此，网站管理员也并非束手无策。黑客可以用列表来破解哈希后的密码，很大程度上是因为加密时使用的哈希算法是公开的。如果黑客不知道加密的哈希算法是什么，那他也就无从下手了。&lt;/p&gt;
+&lt;p&gt;一个直接的解决办法是，自己设计一个哈希算法。然而，一个好的哈希算法是很难设计的——既要避免碰撞，又不能有明显的规律，做到这两点要比想象中的要困难很多。因此实际应用中更多的是利用已有的哈希算法进行多次哈希。&lt;/p&gt;
+&lt;p&gt;但是单纯的多次哈希，依然阻挡不住黑客。两次 MD5、三次 MD5之类的方法，我们能想到，黑客自然也能想到。特别是对于一些开源代码，这样哈希更是相当于直接把算法告诉了黑客。&lt;/p&gt;
+&lt;p&gt;没有攻不破的盾，但也没有折不断的矛。现在安全性比较好的网站，都会用一种叫做“加盐”的方式来存储密码，也就是常说的 “salt”。他们通常的做法是，先将用户输入的密码进行一次MD5（或其它哈希算法）加密；将得到的 MD5 值前后加上一些只有管理员自己知道的随机串，再进行一次 MD5 加密。这个随机串中可以包括某些固定的串，也可以包括用户名（用来保证每个用户加密使用的密钥都不一样）。举个例子：&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+用户名：sqybi    密码：12345678
+
+先对 12345678 进行第一次 MD5，得到：25d55ad283aa400af464c76d713c07ad
+
+指定两个 salt： salt1 = &amp;#64;#$%   salt2 = ^&amp;amp;*()
+
+salt1+用户名+salt2+MD5，得到：&amp;#64;#$%sqybi^&amp;amp;*()25d55ad283aa400af464c76d713c07ad
+
+对新字符串再计算一次 MD5，得到最终的加密串：7edfee82ab9b6f5aa50edbc3a9eb6507
+&lt;/pre&gt;
+&lt;p&gt;在两个 salt 没有泄露的情况下，黑客如果拿到的是最后这个加密串，就几乎不可能推算出原始的密码是什么了。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id6"&gt;
+&lt;h1&gt;最后的安全攻防：数据库泄露之外的危险&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMTUvbHEvMGcvMTVscTBn
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMTUvbHEvMGcvMTVscTBn
+LnBuZw==
+ /&gt;
+&lt;p&gt;但是，即使有这种安全的密码存储方式，也不能太掉以轻心。在文章的一开始我们就说过，密码的存储和验证有三个步骤，每个步骤都有可能被黑客趁虚而入，数据库泄露只不过是其中的一个罢了。&lt;/p&gt;
+&lt;p&gt;在用户输入密码这个步骤，黑客可以通过植入木马等方式直接监视用户的键盘操作；在密码被传输到服务器这个步骤，黑客可以设法截获数据包分析其中包含的密码。而即使数据库有“加盐”，设置过于简单的密码也不是好选择——salt的值也不是没有泄露的可能！&lt;/p&gt;
+&lt;p&gt;要说的是，无论对于用户还是网站管理员，有良好的安全习惯才是最好的防御手段。用户应经常查毒，了解每个系统进程的作用，让木马没有藏身之处；网站管理员可以通过提供https连接或者在本地对密码进行首次加密再传输给服务器，避免数据包被截获；而经常更换密码，重要的账号不重复使用同一个密码，都可以在密码泄露的时候把损失降到最低。关于用户应当如何对待自己密码这个问题，死理性派的 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/61644/"&gt;你的密码安全吗？小心那些隐藏的陷阱&lt;/a&gt; 有过全面而详细的介绍，强烈推荐大家一读。&lt;/p&gt;
+&lt;p&gt;总之，网络的时代想保护好自己的隐私，需要谨慎、谨慎再谨慎，养成良好的安全习惯，才是保护密码的最好方式。而至于网络安全要走的路，还有很长、很长……&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;hr class="docutils" /&gt;
+&lt;p&gt;&lt;strong&gt;参考资料：&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://hi.baidu.com/caoz/blog/item/edcc36d3f812891e3af3cf28.html"&gt;谈谈近期的安全事件&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;相关阅读：&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;[1] &lt;a target="_blank" class="reference external" href="http://www.guokr.com/blog/81201/"&gt;开源密码管理生成器&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;[2] &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/8430/"&gt;怎样设置并记住好记又难猜的密码？&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;blockquote&gt;
+这几天你收到多少封“XXX提醒您注意密码安全”的邮件了？&lt;/blockquote&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">sqybi</dc:creator><guid>http://www.guokr.com/article/81430/</guid></item><item><title>在2011年梦想未来10大生活
+</title><link>http://www.guokr.com/article/81416/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;百度通过分析2011年全年的搜索数据，发布了“2011百度搜索风云榜”。在特色榜单中有不少都跟科技主题沾边，尤其是“十大未来生活”这个搜索结果。现在就让我们来仔细看看，在即将过去的这一年里，使用百度搜索引擎的中国网民最关心的是哪些科技前沿内容吧。&lt;/p&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaGovazYvMHgvaGprNjB4
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaGovazYvMHgvaGprNjB4
+LnBuZw==
+ /&gt;
+&lt;div class="section" id="id1"&gt;
+&lt;h1&gt;云计算&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3EvdG8vanovY3F0b2p6
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3EvdG8vanovY3F0b2p6
+LnBuZw==
+ /&gt;
+&lt;p&gt;云计算并不算是新鲜的概念，但从雏形阶段的电子邮件系统一步步走到如今唾手可得的“云端设备”，我们事实上正见证着互联网概念的稳步成熟——37年间，互联网从传送数据进化为传送计算机本身！&lt;/p&gt;
+&lt;p&gt;【相关阅读】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/zone/cloud/"&gt;通向未来的筋斗云专区&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="siri"&gt;
+&lt;h1&gt;Siri(智能人机对话）&lt;/h1&gt;
+&lt;p&gt;从 iPhone4 到 iPhone4S，乔布斯走了，Siri来了。虽然Siri的功能性尚待发展，人们更多地将其看作一种娱乐工具，但其技术背后的意义更为巨大：人类与机器之间的交互模式由“指令——反馈”逐渐转变为“交流——协助”，这正是人与人之间的沟通模式。&lt;/p&gt;
+&lt;p&gt;【相关阅读】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/blog/70424/"&gt;Siri别迷信&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="lbs"&gt;
+&lt;h1&gt;LBS&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMXEvbTkvcGUvMXFtOXBl
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMXEvbTkvcGUvMXFtOXBl
+LnBuZw==
+ /&gt;
+&lt;p&gt;LBS（基于地理位置的网络服务）确实在过去的一年间风靡一时。从街旁、到大众点评，同一个理念，却带来层出不穷的体验。相信未来人与人的联络将突破五感的限制，科技辅助下的“第6感”将成为一种不可或缺的能力。&lt;/p&gt;
+&lt;p&gt;【相关阅读】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/74562/"&gt;“伸手要钱”的一体化&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id5"&gt;
+&lt;h1&gt;移动终端&lt;/h1&gt;
+&lt;p&gt;国内外移动终端市场虽然至今诸侯林立、商战正酣。这也从一个侧面反映出市场潜力之大。依托“云端”力量与国内产业整合的优势，移动终端肩负起越来越多的职能，代替了我们依赖已久的电脑、相机、播放器等设备，价格却连破冰点。&lt;/p&gt;
+&lt;p&gt;【相关阅读】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/16834/"&gt;10招助你打造完美办移动办公环境&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/20360/"&gt;社交带来的无限购想&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id8"&gt;
+&lt;h1&gt;体感系统&lt;/h1&gt;
+&lt;p&gt;对游戏迷而言，Wii当年带来的激动还历历在目，然而随着Kinect等设备的问世，国内外DIYer天马行空的改造着自己的廉价体感设备，窗帘、机器人、实验室……凡是能想到的设备似乎都能用动作来控制——这份游戏之外的悸动或许正成为连接未来的通道。&lt;/p&gt;
+&lt;p&gt;【相关阅读】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/5672/"&gt;微软的Kinect将用于手术台？&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/5931/"&gt;万能的Kinect，还能生成全息影像？&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/2867/"&gt;打游戏，动起来&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="d"&gt;
+&lt;h1&gt;裸眼3D显示&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvazAvZGgvNWwvazBkaDVs
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvazAvZGgvNWwvazBkaDVs
+LnBuZw==
+ /&gt;
+&lt;p&gt;显示技术日新月异的今天，我们能体验到前人无法体验的视觉效果：面前的子弹几乎把我击中，手中的游戏机正向我开火，我被迫全力反击……裸眼3D曾被认为不可能在单块屏幕上实现，但对生动影像的渴望促使我们完成了它，并且抛开了耳鼻的束缚，显得如此优雅。3D不只打开了新的维度，更打开了无限可能。&lt;/p&gt;
+&lt;p&gt;【相关阅读】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/3017/"&gt;真·3D球形显示器&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id12"&gt;
+&lt;h1&gt;新能源汽车&lt;/h1&gt;
+&lt;p&gt;新能源汽车，即使用化石燃料（汽油、柴油）以外的能源进行驱动的汽车。目前主要包括混合动力汽车、纯电动车以及氢能源汽车等。新能源汽车不再需要不可再生能源来驱动，给全球气候变化大环境下的汽车工业指出来一条新路。&lt;/p&gt;
+&lt;p&gt;【相关阅读】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/22675/"&gt;MoD，改变未来的交通方式&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/22448/"&gt;【上海车展】驱动新能源汽车的三剑客&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/78293/"&gt;用巴掌大的燃料电池驱动汽车&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/7342/"&gt;风力汽车助你完成跨洲之旅&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id16"&gt;
+&lt;h1&gt;柔性屏幕&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvN3Avb3AvYjcvN3BvcGI3
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvN3Avb3AvYjcvN3BvcGI3
+LnBuZw==
+ /&gt;
+&lt;p&gt;随着各大公司对柔性屏幕研发进度的曝光，《三体》中的“信息衣”似乎正逐步成为现实。“柔性”并不是一个可有可无的特点，形状将决定功能，一旦显示器的固态特性被颠覆，人类的创意或许也能由此拓展出无穷无尽的屏幕用法。&lt;/p&gt;
+&lt;p&gt;【相关阅读】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/31115/"&gt;用可弯折的纸片手机打电话&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/11235/"&gt;大众科学：来自台湾的“丝绸屏幕”&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id19"&gt;
+&lt;h1&gt;类人机器人&lt;/h1&gt;
+&lt;p&gt;类人机器人是在形态和功能上尽量模拟人类的机器人。我们有时候不想面对冷冰冰的机器，比如在用于陪伴老人、照顾小孩或者与你在枕边呢喃的时候。科学家在让技术变得更人性化的同时，也在赢取属于上帝的荣耀。&lt;/p&gt;
+&lt;p&gt;【相关阅读】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/72935/"&gt;电影中的机器人离我们还有多远？&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/665/"&gt;卫报：第一个进入国际空间站的类人机器人&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/5990/"&gt;你的下个电话可能是一个机器人&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id23"&gt;
+&lt;h1&gt;光场相机&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvajkvZ3kvcDgvajlneXA4
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvajkvZ3kvcDgvajlneXA4
+LnBuZw==
+ /&gt;
+&lt;p&gt;光场相机在去年走出实验室，正式进入民用市场。表面上，这似乎只是摄影迷的狂欢——“永远不用担心焦距了！”但从本质上来看，它将走的更远，设想一下可自由控制景深的电影、电视，无疑将是在3D技术之后的又一个影像突破。&lt;/p&gt;
+&lt;p&gt;【相关阅读】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/69734/"&gt;相机革命：先拍照后对焦的光场相机&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">创意科技</dc:creator><guid>http://www.guokr.com/article/81416/</guid></item><item><title>2011科幻游戏年终盘点，哪些游戏你非玩不可？
+</title><link>http://www.guokr.com/article/81413/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;2011年终于有惊无险地要过去了，感谢飞天小女警。12月，电子游戏业界具有相当影响力的VGA（Spike视频游戏评选，Spike Video Game Awards）揭晓了本年度的各游戏奖项获得者。25个奖项中，半数以上的获奖游戏都和科幻题材相关。&lt;/p&gt;
+&lt;p&gt;虽然形势一片大好，笔者仍坚持认为，2011年的科幻游戏，可以用“缺乏新血、膝盖中箭”八个字来形容（被拖出去暴打）……&lt;/p&gt;
+&lt;p&gt;在VGA获奖者中，大赢家是《上古卷轴5：天际》（The Elder Scrolls V: Skyrim），这款被戏称为“老头滚动条”的RPG获得了年度最佳游戏的荣誉，同时还创造了“……，直到我的膝盖中了一箭”的流行语。可惜它不是科幻题材……第二大丰收的游戏是《传送门2》（Portal 2），这款科幻游戏包揽了最佳PC游戏、最佳多人游戏、最佳DLC、最佳男性配音、最佳女性配音等五个奖项，占总奖项的五分之一！（编辑：这款游戏从制作水平到科幻内涵上都堪称神作，可回顾文章 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/59555/"&gt;“打开《传送门2》的多重维度”&lt;/a&gt;
+）&lt;/p&gt;
+&lt;p&gt;从整体来看，2011年优秀的科幻游戏大都是著名作品的续作，这从一定程度上反映了科幻题材游戏缺乏新鲜血液的现状。作为一个科幻迷，不得不对这个墨守陈规的现状表示忧虑。炒冷饭做续作做不过三代，这是游戏界的金科玉律。瞧瞧那些不断重复出新作的所谓“大作”“系列”吧！真正值得体验、富有创新精神的作品又有多少？&lt;/p&gt;
+&lt;p&gt;笔者将在后文中盘点本年度的主要科幻游戏作品。按照推荐度划分，★★★★★五星推荐的是本年度必玩不可的优秀大作，★★★★四星则为富有亮点的作品，★★★三星作品的推荐则是为了照顾各位粉丝的情绪，可玩可不玩。&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h1&gt;★★★★★ 五星阵营：&lt;/h1&gt;
+&lt;p&gt;&lt;strong&gt;传送门2（Portal 2）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;开发商：Valve Software&lt;/p&gt;
+&lt;p&gt;平台：PC、PS3、Xbox360&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveTcvOTEvMWIveTc5MTFi
+LnBuZw==
+ alt="传送门2" /&gt;&lt;p class="document-figcaption"&gt;传送门2&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;这是一款解谜类的FPS（第一人称射击）游戏，剧情紧接着前作展开（据说，前作Portal是贝拉克•奥巴马总统最爱玩的游戏，不知真假）。游戏进行的方式很特别，不像FPS通常表现的那样，只是疯狂地开枪杀人；在《传送门 2》中，你手中的时空枪能够在你面前的墙壁上开一扇传送门，让你自由穿梭在种种匪夷所思的关卡中，十分杀脑细胞。游戏的故事背景被设定在名作《半条命》的架构内，和“光圈科技”有关，游戏画面简洁而富有时尚气息。想体验科幻氛围吗？想向奥巴马的智商看齐吗？不要错过本作。&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;战争机器3（Gears of War 3）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;开发商：EPIC GAME&lt;/p&gt;
+&lt;p&gt;平台：Xbox360&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvazIvcmovZTgvazJyamU4
+LnBuZw==
+ alt="战争机器3" /&gt;&lt;p class="document-figcaption"&gt;战争机器3&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;作为系列三部曲的完结作，《战争机器3》的表现可以说是四平八稳，稳中有胜。这款TPS（第三人称射击）游戏保持了超高的画面和游戏品质，并且完成了把这个科幻故事讲完的历史重任……笔者对本游戏没能获得VGA的XBox360最佳游戏而深感愤怒。顺便吐槽一下，可能由于《战争机器2》的故事设置问题，本作作为三部曲的终结，其故事和世界架构反而有点狗尾续貂的感觉（再度被群殴）。不过，究竟怎么样，还需要大家亲自上阵杀一把。（剧透，本作中有疑似丧尸的怪物哦！）&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;蝙蝠侠：阿克哈姆城（Batman: Arkham City）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;开发商：Rocksteady&lt;/p&gt;
+&lt;p&gt;平台：PC、PS3、Xbox360&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdHAvY2wvODkvdHBjbDg5
+LnBuZw==
+ alt="蝙蝠侠：阿克哈姆城" /&gt;&lt;p class="document-figcaption"&gt;蝙蝠侠：阿克哈姆城&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;这款跨平台的作品竟然获得了VGA评选的“最佳Xbox360”游戏，令笔者大跌隐形眼镜。蝙蝠侠的魅力果然无人能挡，自从前作《蝙蝠侠：阿克哈姆疯人院》黑马跃出以来，本系列改变了广大游戏迷“（电影、动漫）改编作品无佳作”的偏见。本作的类型是ACT（动作），由于题材的限制，科幻的表现力略有不足。&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h1&gt;★★★★ 四星阵营：&lt;/h1&gt;
+&lt;p&gt;&lt;strong&gt;刺客信条：启示录（Assassin’s Creed: Revelations）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;开发商：Ubi&lt;/p&gt;
+&lt;p&gt;平台：PC、PS3、XBox360&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcjEvOHAvazMvcjE4cGsz
+LnBuZw==
+ alt="刺客信条：启示录" /&gt;&lt;p class="document-figcaption"&gt;刺客信条：启示录&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;母猪上树了，《刺客信条》也量产了。科幻与历史题材的交融，绝美的中世纪场景。不足之处也很明显：游戏玩法过于重复。&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;杀出重围：人类革命（Deus Ex: Human Revolution）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;开发商：Eidos Montreal&lt;/p&gt;
+&lt;p&gt;平台：PC、PS3、XBox360&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd3EvYXovcjIvd3FhenIy
+LnBuZw==
+ alt="杀出重围：人类革命" /&gt;&lt;p class="document-figcaption"&gt;杀出重围：人类革命&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;虽然是一款FPS，但拥有相当高的自由度，加入了浓重的RPG元素。战斗、潜入、黑客等模式都很有趣，顺便一提，本作是赛博朋克风格的，喜欢《黑客帝国》、《神经浪游者》的同学一定要体验一下《人类革命》！&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;漫画英雄VS卡普空3（Marvel Vs Capcom 3）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;开发商：Capcom&lt;/p&gt;
+&lt;p&gt;平台：PS3、Xbox360&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZDUvbjkvMmMvZDVuOTJj
+LnBuZw==
+ alt="漫画英雄VS卡普空3" /&gt;&lt;p class="document-figcaption"&gt;漫画英雄VS卡普空3&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;本作是FTG（格斗）游戏，其中钢铁侠、万磁王、绿巨人、金刚狼、蜘蛛侠、末日博士、美国队长等科幻漫画人物及威斯克、洛克人Zero等卡普空（Capcom）老牌游戏人物均有上佳表现，绝对适合全家同乐……或者两人同乐，勾搭妹子……&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;子弹风暴（Bulletstorm）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;开发商：People Can Fly&lt;/p&gt;
+&lt;p&gt;平台：PC、PS3、XBOX360&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcWIvNjYvZ24vcWI2Nmdu
+LnBuZw==
+ alt="子弹风暴" /&gt;&lt;p class="document-figcaption"&gt;子弹风暴&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;本作算是一匹小小的黑马，在FPS的玩法方面有一定的创新，强调“花式射击”。剧情里让人在墙壁上行走的磁力鞋和能够把敌人从掩体后面扯过来的电磁鞭令人印象深刻。世界设计有点“废土”风格，对白也很风趣（低俗？）。&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;孤岛危机2（Crysis 2）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;开发商：Crytek Studios&lt;/p&gt;
+&lt;p&gt;平台：PC、XBOX360、PS3&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveDEvYW8vN3EveDFhbzdx
+LnBuZw==
+ alt="孤岛危机2" /&gt;&lt;p class="document-figcaption"&gt;孤岛危机2&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;以号称史上画面最强的引擎“Cry Engine 3”开发，画面确实美得没话说。可是，作为一款FPS，游戏性实在太过平庸。单纯地冲着主角那身超酷的纳米装甲去玩吧！&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;死亡空间2（Dead Space 2）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;开发商：Visceral Games&lt;/p&gt;
+&lt;p&gt;平台：PC、PS3、XBOX360&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOG8vdHkvYWwvOG90eWFs
+LnBuZw==
+ alt="死亡空间2" /&gt;&lt;p class="document-figcaption"&gt;死亡空间2&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;本作相当恐怖，胆小者慎入。作为一款TPS游戏，本作的剧情很是有趣，主角的那身招牌盔甲也很是可爱……&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;狂怒（Rage）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;开发商：id Software&lt;/p&gt;
+&lt;p&gt;平台：PC、PS3、XBox360&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYWsvM3IvcHMvYWszcnBz
+LnBuZw==
+ alt="狂怒" /&gt;&lt;p class="document-figcaption"&gt;狂怒&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;本作的画面处理得真的是十分漂亮。它的启示录风格也许会让你想起《辐射》系列。不过，启示录或废土风格的同类作品太多了，像《战争机器》、《子弹风暴》等，本作只能排在最后面了……&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id4"&gt;
+&lt;h1&gt;★★★ 三星阵营：&lt;/h1&gt;
+&lt;p&gt;&lt;strong&gt;永远的毁灭公爵（Duke Nukem Forever）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;开发商：Gearbox Software&lt;/p&gt;
+&lt;p&gt;平台：PC、XBox360、PS3&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZW0vb2YvYzgvZW1vZmM4
+LnBuZw==
+ alt="永远的毁灭公爵" /&gt;&lt;p class="document-figcaption"&gt;永远的毁灭公爵&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;游戏界的奇葩隆重登场……一款跳票了十四年的丧尸游戏，曾经等待他的青年们都快抱上孙子了。前几年有传言说这款FPS真的死了，绝对不会推出了，可它还是诈尸了！&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;战锤40000：星际战队（Warhammer 40,000: Space Marines）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;开发商：RelicEnte&lt;/p&gt;
+&lt;p&gt;平台：PS3、XBox360&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaWoveWovZW4vaWp5amVu
+LnBuZw==
+ alt="战锤40000：星际战队" /&gt;&lt;p class="document-figcaption"&gt;战锤40000：星际战队&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;老牌桌面游戏战锤《40K》不甘寂寞，推出了这款ARPG作品。笔者还没有时间玩，体验过的同学不妨发表一下高见。&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id5"&gt;
+&lt;h1&gt;❤特别推荐❤&lt;/h1&gt;
+&lt;p&gt;&lt;strong&gt;合金装备：高清收藏集（METAL GEAR SOLID HD COLLECTIO）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;开发商：KONAMI&lt;/p&gt;
+&lt;p&gt;平台： PS3、Xbox360&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdGgvejgvNGQvdGh6ODRk
+LnBuZw==
+ alt="合金装备：高清收藏集" /&gt;&lt;p class="document-figcaption"&gt;合金装备：高清收藏集&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;在这里要特别推荐本作。这是《合金装备》系列在次世代平台上的合集，包括PS2平台《合金装备2：自由之子》、《合金装备：食蛇者》及PSP平台的《合金装备：和平行者》的高清重制版。其中，本作的PS3版还有《合金装备》初代作品以及《合金装备4：爱国者之枪》两款游戏，可谓阵容非常庞大。怀旧党和阴差阳错没玩过本系列的同学一定要试试这套合集！&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;光环：战斗进化纪念版（Halo: Combat Evolved Anniversary）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;开发商：343 Industries&lt;/p&gt;
+&lt;p&gt;平台：XBox360&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3EvZm0vMjMvY3FmbTIz
+LnBuZw==
+ alt="光环：战斗进化纪念版" /&gt;&lt;p class="document-figcaption"&gt;光环：战斗进化纪念版&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;今年果然是炒冷饭的一年，时值科幻大作《光环》问世十周年，黑心游戏商果不其然发行了初代的重制版。本作的最大特色是能够切换到XBox版本的画面，以当年的视点体验游戏。不知道本作发售后，《生活大爆炸》里谢耳朵（Sheldon）他们的”Halo night”是否也会玩上本作呢？&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;PS：掌机平台的科幻游戏，笔者没想到什么值得盘点的。也许是……《重装机兵2重制版》？&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">城堡</dc:creator><guid>http://www.guokr.com/article/81413/</guid></item><item><title>道不道德，环境说了算
+</title><link>http://www.guokr.com/article/81400/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;（文 / ALINA TUGEND）要是撞见自己尊敬的人或是亲朋好友正在干违法犯罪的事，你会冲上去加以制止吗？会马上打电话通知当局，毫不顾及这样做可能对你的工作、你的单位还有你深爱的事业造成的负面影响吗？&lt;/p&gt;
+&lt;p&gt;我们中大多数人可能会说“绝对能”，其他一些则可能回答“也许吧”。而最诚实的答案呢？——我不知道。&lt;/p&gt;
+&lt;p&gt;虽然我们都认为自己在遇到这种情况时会做出正确的选择，甚至做出英雄壮举，但研究表明，事情往往并非如此。“比起自己，人们通常更愿意评判他人的道德观，” 哈佛商学院副教授弗朗西斯卡 • 基诺（Francesca Gino）等 3 人撰文表示，“人们相信自己比他人更加诚实可信，也更努力地做好事。”&lt;/p&gt;
+&lt;p&gt;我们对自己的这份信心未能得到历史或研究的证实。&lt;/p&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd2gvdm8vMGMvd2h2bzBj
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd2gvdm8vMGMvd2h2bzBj
+LnBuZw==
+ /&gt;
+&lt;div class="section" id="id1"&gt;
+&lt;h1&gt;普通人很容易被说服去做那些他们相信是错误的事情&lt;/h1&gt;
+&lt;p&gt;学术界关于此问题最著名的例子是由耶鲁大学心理学家斯坦利 • 米尔格拉姆（Stanley Milgram）在 20 世纪 60 年代初期进行的一项实验。在实验中被试会扮演“教师”，他们需要引导“学习者”进行词语配对。每当学习者给出错误答案时，教师可以电击学习者，并针对每个错误答案增加电击强度。&lt;/p&gt;
+&lt;p&gt;“学习者”实际上是一个演员，而且实际上并不存在电击，但实施电击的被试并不知晓。事实上，随着电击“增加”，学习者会按墙上的铃（被看做是疼痛的表现）。最终，大部分“教师”都用了最强的 450 伏电击，在其他地方重复该实验也得到了类似结论。结果令人沮丧——普通人很容易被说服去做那些他们相信是错误的事情。&lt;/p&gt;
+&lt;p&gt;“人们会坐在那儿大喊大叫焦躁不安，但他们并不想表现得这么粗鲁。”社会心理学家卡罗尔 • 塔弗瑞斯（Carol Tavris）如此说道。她还表示，大多数人都说他们相信自己的做法会跟上述实验的被试不同，可实际做起来却不是这样。&lt;/p&gt;
+&lt;p&gt;基诺教授和她的同事在一个工作面试中询问女性面试者，假如遭遇言语骚扰她们会怎么做。“大多数人回答说她们会走开或给出警告，”她说，“但实际上，当事情发生时，她们并没有那么做。总的来说，研究指向的事实是，人们希望表现得好但结果却是向诱惑屈服。”&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h1&gt;渐进式的侵蚀下让人们更容易道德越界&lt;/h1&gt;
+&lt;p&gt;研究也表明，当道德价值和原则的侵蚀是渐进式而不是突跃式时，人们更容易道德越界。&lt;/p&gt;
+&lt;p&gt;基诺参与撰写的另一篇的文章里举了一家会计公司的例子，该文 2009 年刊于《实验社会心理学期刊》（ &lt;em&gt;The Journal of Experimental Social Psychology&lt;/em&gt; ）上。这家会计事务所与某家代理公司具有极好的关系。该会计事务所向该公司收取数千万美元的费用，核准这家公司高质量且符合道德的财政报表。头 3 年，相安无事。但到了第 4 年，该公司突然出现权力滥用现象，甚至触及了法律底线。&lt;/p&gt;
+&lt;p&gt;另有一例，同样是会计事务所，同样是代理公司。不同的是，这一次，这家代理公司在正常度过第一年之后，在接下来的 3 年里就开始一点一点越过道德底线。该文章说，与第一种情形相比，第二种情形，公司的财务报表更有可能通过会计事务所的审计。基诺和她的同事写道，会发生这种事的理由之一在于：&lt;/p&gt;
+&lt;blockquote&gt;
+不道德行为可变为日常活动必不可少的一部分，以至于人们可能无法察觉自身行为的不恰当之处。&lt;/blockquote&gt;
+&lt;p&gt;我们还用另一种方式欺骗自己。我们中的大多数人都会声称自己敬佩那些代表正确（或是最终证明正确）的人士，特别是当他们强到足以用枪指着劲敌的脸时。&lt;/p&gt;
+&lt;p&gt;但研究再一次证明这不一定是真的。在文章《当集体错误而异端分子正确时》（ &lt;em&gt;When Groups are Wrong and Deviants are Right&lt;/em&gt; ）中，澳大利亚学者认为，集体成员往往对反对从众的人怀有敌意，即便他们后来改为同意反对从众者的意见，也是如此。该文发表在去年的《欧洲社会心理学期刊》（ &lt;em&gt;European Journal of Social Psychology&lt;/em&gt; ）上。&lt;/p&gt;
+&lt;p&gt;学者发现，即使说某个告密者所说的话被证明是事实，通常也不会受人敬佩或是重新被小圈子所接纳。相反，该群体可能依然感到愤怒，因为告密者破坏了他们的团结。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h1&gt;要行善，先创造行善的环境&lt;/h1&gt;
+&lt;p&gt;斯坦福大学心理学退休教授及大量著作的作者菲利普 • G • 津巴多（Philip G. Zimbardo）花了毕生时间研究道德堕落，他的著作包括《路西法效应：好人是如何变成恶魔的》（ &lt;em&gt;The Lucifer Effect: Understanding How Good People Turn Evil&lt;/em&gt; ）。 1971 年，津巴多教授设计了那个著名的“斯坦福监狱实验”：在这个实验里扮演“狱警”的大学生在极短的时间里转变成了虐待狂，拒绝向扮演“囚犯”的学生提供水和食物、不让他们睡觉、用灭火器喷“囚犯”并使他们光着身子遭受鞭打。&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbXUvb3IvOTAvbXVvcjkw
+LnBuZw==
+ alt="津巴多教授设计的“斯坦福监狱实验”：在实验中，扮演“狱警”的大学生（左一、左二为其中的两人）在极短的时间里转变成了虐待狂，拒绝向扮演“囚犯”的学生（图中戴头罩者为其中三人）提供水和食物、不让他们睡觉、用灭火器喷“囚犯”并使他们光着身子遭受鞭打（Dr. Philip Zimbardo/nytimes.com）" /&gt;&lt;p class="document-figcaption"&gt;津巴多教授设计的“斯坦福监狱实验”：在实验中，扮演“狱警”的大学生（左一、左二为其中的两人）在极短的时间里转变成了虐待狂，拒绝向扮演“囚犯”的学生（图中戴头罩者为其中三人）提供水和食物、不让他们睡觉、用灭火器喷“囚犯”并使他们光着身子遭受鞭打（Dr. Philip Zimbardo/nytimes.com）&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;津巴多教授把恶行分成了三类：个人的恶行（“少数烂苹果”）、情境的恶行（“一桶坏苹果”）或体制的恶行（“大量坏苹果的缔造者”）。&lt;/p&gt;
+&lt;p&gt;“由于各种通常无法察觉的环境——胁迫、匿名、非人化，大多数人可以在极短的时间内受惑而跨过善恶的界线，”他说，“我们不想接受这种想法，因为它抨击了我们关于人类本性尊严的概念。”&lt;/p&gt;
+&lt;blockquote&gt;
+尽管在面对这样令人气馁的结论时可能很容易让人投降，但津巴多教授等人认为，重点在于让人们意识到人们如何以及为什么表现出这些糟糕行为，并利用这些信息为善行创造环境。&lt;/blockquote&gt;
+&lt;p&gt;津巴多教授建立了“英雄想象计划”（Heroic Imagination Project）。这项计划已在美国加州的一些学校里开展，该计划让学生观看斯坦福监狱实验及类似的一个关于服从权威的实验，教育他们个人如何能够认识到这类情形力量并仍然勇敢地去做正确的事。津巴多教授希望能将这项计划更广泛地应用到商界和军队中去。虽然这绝非易事，但他坚信人们可以经过教导、甚至引导去做正确的事，相信这一点的并非只有他一人。&lt;/p&gt;
+&lt;p&gt;“我真心相信我们能够创造出一个行为合乎道德的环境，”基诺教授说，“只是可能需要更强有力的措施。”&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;文章编译自： &lt;a target="_blank" class="reference external" href="http://www.nytimes.com/2011/11/19/your-money/why-doing-the-ethical-thing-isnt-automatic.html?pagewanted=1&amp;amp;_r=3&amp;amp;partner=rss&amp;amp;emc=rss"&gt;Doing the Ethical Thing May Be Right, but It Isn't Automatic.&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;本文图片来源：nytimes.com&lt;/p&gt;
+&lt;p&gt;本文编辑：  &lt;a target="_blank" class="reference external" href="http://www.guokr.com/i/1220728961/"&gt;熊出没&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/post/22287/"&gt;怎样加入心事鉴定组？&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">nvgone</dc:creator><guid>http://www.guokr.com/article/81400/</guid></item><item><title>【圣诞特稿】圣诞节里的坏人们
+</title><link>http://www.guokr.com/article/81395/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;白胡子、红长袍加上乐呵呵的笑容，坐着驯鹿拉的雪橇，在圣诞夜从烟囱里悄悄进屋，给孩子们的袜子里塞上礼物——这就是大家都喜欢的圣诞老人。不过，正如骑白马的不一定就是王子，打扮成圣诞老公公的也不一定是来送礼的……&lt;/p&gt;
+&lt;div class="section" id="id1"&gt;
+&lt;h1&gt;别动！圣诞老人！&lt;/h1&gt;
+&lt;p&gt;2009年12月23日，一个圣诞老人走进了位于美国田纳西州的纳什维尔（Nashville）的一家银行。和其他圣诞老人装束差不多，他穿着红袍子、带着白色的大胡子，只是脸上多了一副墨镜。&lt;/p&gt;
+&lt;p&gt;他走到柜台前，银行职员大概以为圣诞老人来取钱给孩子们买礼物，便很有礼貌地请他摘下墨镜，不过，他从背上的大口袋里掏出的却是一支手枪。劫匪命令职员们把钱放到他的口袋里，并且警告说，倘若有人敢塞进 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/66157/"&gt;染料包&lt;/a&gt; 的话，他就回来杀死所有的人。&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbHMvc28vZXMvbHNzb2Vz
+LnBuZw==
+ alt="抢劫的圣诞老人。图：镜报" /&gt;&lt;p class="document-figcaption"&gt;抢劫的圣诞老人。图：镜报&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;最终，这位贪婪的圣诞老人拎着沉甸甸的口袋扬长而去。而因为他这身装束在圣诞节期间再常见不过，监控录像也提供不了多少有用的线索。实际上，这种伪装伎俩并非他的首创，早在1927年，就有抢匪在德克萨斯州一起银行劫案中用过这招了。当时，一名劫匪穿了一件应景的圣诞老人服来伪装自己。许多小孩甚至把他当成了派发礼物的圣诞老人，尾随着劫匪朝银行浩浩荡荡走去。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h1&gt;圣诞老人也骗小朋友？&lt;/h1&gt;
+&lt;p&gt;圣诞节里最开心的是什么人？当然是孩子们了。可以不用上课、可以堆雪人，还有漂亮的圣诞树和好多礼物，多棒的日子啊！嗯，如果能再去参加一个为期3天的圣诞节活动，和父母、老师一起享受豪华午餐，去寻找隐藏在树丛里的礼物，还能和来自28个国家的大使们一起玩耍，看哈利•波特的精彩表演，哇，简直是帅呆了！至于票价嘛，只要区区10美元！&lt;/p&gt;
+&lt;p&gt;这项活动听起来是这样的不可思议，简直就像是圣诞老人本人举办的一样。它使美国迈阿密各个学校的孩子们心动不已，纷纷央求父母去买票参加。一些学校甚至组织烤饼干义卖，帮那些家庭贫困的孩子们支付票价，引得消防队、警察局的好心叔叔们慷慨解囊，只为了让孩子们有个难忘的圣诞节回忆。&lt;/p&gt;
+&lt;p&gt;但是，当2003年的圣诞节前夜，来自迈阿密各地的2800名孩子及他们的家长、老师来到票上指定的地方时，却发现这只不过是个残酷的骗局：没有圣诞树和彩灯，没有豪华的舞台，没有哈利•波特，除了一个关闭的游乐场外什么都没有。孩子们的这个圣诞节，就被这次活动的主办者，50岁的戴维.李.艾勒沙（David Lee Ellisor）给偷走了，他虚构了整个演出，一共敛财38000美元，其中大部分用来还债，并给自己买了一块价值5000元的手表。&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZHIvc2YvbHcvZHJzZmx3
+LnBuZw==
+ alt="骗钱的圣诞老人不是好圣诞老人。图：cbc.ca" /&gt;&lt;p class="document-figcaption"&gt;骗钱的圣诞老人不是好圣诞老人。图：cbc.ca&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;FBI随即在全国对他进行通缉，他于次年的1月自首，并因欺诈罪被判处7年徒刑，这是此类犯罪的最重刑期。这件事情中唯一让人感到欣慰的是，受骗的孩子中的一部分，随后接到了迈阿密市市长曼尼•迪亚斯（Manny Diaz）夫妇的邀请，参加了在当地展览中心举办的圣诞晚会活动，抚慰了他们受伤的小心灵。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id4"&gt;
+&lt;h1&gt;给圣诞节添点乐子吧！&lt;/h1&gt;
+&lt;p&gt;尽管一些邪恶的圣诞老人把圣诞节变成了“圣诞劫”，不过还是有一些笨贼，专挑圣诞假期出动，给各位圣诞节值班的警察找点“乐子”。&lt;/p&gt;
+&lt;p&gt;2010年12月22日的下午，一名男子走进美国康涅狄格州一家印度风味餐厅，拿出手枪并高喊抢劫。但他没有想到的是，厨房里两名厨师非但没有被唬住，反而提着菜刀，气势汹汹地朝他扑来，吓得他赶紧解释说自己只是开了个玩笑，然后落荒而逃。&lt;/p&gt;
+&lt;p&gt;不过警方很快将其抓捕。这名劫匪名叫杰罗姆•泰勒（Jerome Taylor），时年20岁，据称只是为了弄点钱给自己的孩子们买吃的，度过一个美好的圣诞节。令人惊讶的是，警方搜查后发现，他并没有携带任何武器，那支所谓的手枪，不过是一部iPhone4手机，套着一个形似左轮手枪枪柄的手机套而已。尽管他获得了餐厅老板的谅解，但还是将为自己的抢劫未遂行为面临法律的惩罚。&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdmUvcTcvdzcvdmVxN3c3
+LnBuZw==
+ alt="少年，iPhone不是这么用的。图：Techweb" /&gt;&lt;p class="document-figcaption"&gt;少年，iPhone不是这么用的。图：Techweb&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;另一起笨蛋劫匪制造的圣诞抢劫发生在2007年。圣诞夜，凌晨2点左右，位于华盛顿州的基特萨普县的波尔斯博小镇（Poulsbo）已经是一片静谧，大家都在用不同的方式享受着圣诞夜。突然，一个煞风景的劫匪闯进了305号高速公路旁的一家汽车服务站，挥舞着一把刀子，威胁说要杀掉服务站里的员工——除非他们给他钱。&lt;/p&gt;
+&lt;p&gt;拥有圣诞精神的员工们并没有为他的威胁所吓倒，反而立即拨打了911报警电话。气急败坏的劫匪狠狠揍了一名员工，砸烂了几张柜台后夺门而逃，跳上等在外面的一辆汽车逃之夭夭。服务站员工对赶来的警察说，车上还有一名劫匪，车子是1999年款的红色本田雅阁轿车。警方随即对这一地区的车辆进行了搜索，并盘查可疑人员。&lt;/p&gt;
+&lt;p&gt;可能是因为圣诞老人不忍心看到加油站在这么好的日子遭劫，顺手帮了一把：就在一个多小时以后，刚才那辆红色本田车，又原路开了回来，而且另外一个人从车上走下来，向他们打听出城的路该往哪边走。很明显，这两个劫匪迷路了……&lt;/p&gt;
+&lt;p&gt;随后，赶来的警察沿着劫匪离开的路线一举将这两个路痴抓获，让他们体验了监狱中的圣诞夜。&lt;/p&gt;
+&lt;blockquote&gt;
+在圣诞节这个充满爱与温情节日里，那些坏人就像是传说中的邪恶地精一般，破坏美好温馨的节日气氛。虽然邪恶的圣诞老人离我们可能很遥远，但还是得提醒各位果壳网友，在即将到来的圣诞节、元旦及春节假期时，一定要注意个人的财物和人身安全，特别是在人员密集的场合更是如此。有了安全，才会有愉快而美好的节日回忆。&lt;/blockquote&gt;
+&lt;div class="section" id="id5"&gt;
+&lt;h2&gt;了解更多：&lt;/h2&gt;
+&lt;table class="docutils footnote" frame="void" id="id6" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;[1]&lt;/td&gt;&lt;td&gt;&lt;a target="_blank" class="reference external" href="http://www.telegraph.co.uk/topics/christmas/6872823/Armed-Santa-Claus-robs-US-bank.html"&gt;Armed Santa Claus robs US bank&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id7" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;[2]&lt;/td&gt;&lt;td&gt;&lt;a target="_blank" class="reference external" href="http://en.wikipedia.org/wiki/Santa_Claus_Bank_Robbery"&gt;Santa Claus Bank Robbery&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id8" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;[3]&lt;/td&gt;&lt;td&gt;&lt;a target="_blank" class="reference external" href="http://www.fbi.gov/news/stories/2005/december/pageant_scam120505"&gt;The Crook who Stole Christmas&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id9" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;[4]&lt;/td&gt;&lt;td&gt;&lt;a target="_blank" class="reference external" href="http://www.aolnews.com/2010/12/24/police-jerome-taylor-tried-to-rob-connecticut-restaurant-with-i/"&gt;Police: Man Tries to Rob Restaurant With iPhone&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id10" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;[5]&lt;/td&gt;&lt;td&gt;&lt;a target="_blank" class="reference external" href="http://www.northkitsapherald.com/news/19748014.html"&gt;Christmas robbery foiled by stupidity&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id11" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;[6]&lt;/td&gt;&lt;td&gt;题图来自 &lt;a target="_blank" class="reference external" href="http://thebarprop.blogspot.com/2010/12/bad-santas.html"&gt;Bad Santa&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">馒头老妖</dc:creator><guid>http://www.guokr.com/article/81395/</guid></item><item><title>怀孕会对女性大脑产生什么影响？
+</title><link>http://www.guokr.com/article/81387/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;孕期是女人中枢神经系统发育的关键时期，为了探究怀孕对女性脑部的影响。美国查普曼大学心理学家格林（Laura M. Glynn）和她的同事、美国加州大学欧文分校的山德曼（Curt A. Sandman）对此做了调查。&lt;/p&gt;
+&lt;p&gt;《最新心理科学指南》（Current Directions in Psychological Science）12月刊上刊登的这篇综述 &lt;a target="_blank" class="reference external" href="http://cdp.sagepub.com/content/20/6/384.abstract"&gt;文章&lt;/a&gt; ，讨论了这方面的理论和发现。除了孕期，女人再没有哪个时期会经历如此巨大的荷尔蒙波动。尽管还未证实，但有研究认为生殖激素可能会让雌性的大脑做好当母亲的准备，让她不受压力影响并适应孩子的需要。格林猜想这可能也是为什么晚间孩子有动作时母亲会醒来而父亲仍然睡觉的原因。其他一些研究则证实了一些怀孕女性抱怨的“怀孕后变傻”，或者说在生孩子前后记忆受损。格林表示，这些与繁殖有关的认知和情绪变化可能有些麻烦，但益处是让母亲更敏感和高效。&lt;/p&gt;
+&lt;p&gt;这篇文章检查的部分研究，完善了关于产前环境对孩子影响的一些早期发现。比如说，越来越多的证据显示，不仅是产前的逆境，比如母亲营养不良或抑郁本身对孩子有影响，实际上产前生活水平和出生后生活情况是否一致可能更重要。孩子出生前，母亲如果处于营养不良的状态中，那这个孩子在食物不足的环境中可能能更好地生活。但是如果孩子能吃到正常量的食物的话，他可能就会肥胖。此外时机也很重要，怀孕早期母亲焦虑的话，孩子的认知发展会有问题。而怀孕晚期同等水平的压力荷尔蒙却会促进认知发育。&lt;/p&gt;
+&lt;p&gt;母亲会影响孩子，胎儿也会影响母体。即使意识不到，胎儿发育也会提升母亲的心率以及皮肤电导率。胎儿的细胞还会通过胎盘进入母亲的血液中。&lt;/p&gt;
+&lt;p&gt;格林指出，绝大多数对怀孕母亲大脑的研究都是在啮齿动物身上做的，而啮齿动物和人类的怀孕过程很不相同。我们需要更多对于人类母亲的研究。同时她也相信，对怀孕改变大脑的更全面理解，能让我们更好地帮助遇到麻烦的母亲度过难关。&lt;/p&gt;
+&lt;table class="docutils field-list" frame="void" rules="none"&gt;
+&lt;col class="field-name" /&gt;
+&lt;col class="field-body" /&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr class="field"&gt;&lt;th class="field-name"&gt;编译自:&lt;/th&gt;&lt;td class="field-body"&gt;physorg网站12月21日&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class="field"&gt;&lt;th class="field-name"&gt;原文:&lt;/th&gt;&lt;td class="field-body"&gt;&lt;a target="_blank" class="reference external" href="http://medicalxpress.com/news/2011-12-pregnancy-woman-brain.html"&gt;请看这里&lt;/a&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class="field"&gt;&lt;th class="field-name"&gt;图片:&lt;/th&gt;&lt;td class="field-body"&gt;FoodPix / Jupiter&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;（果壳环球科技观光团微博  &lt;a target="_blank" class="reference external" href="http://t.sina.com.cn/guokrdigest"&gt;http://t.sina.com.cn/guokrdigest&lt;/a&gt; ）&lt;/p&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">环球科技观光团</dc:creator><guid>http://www.guokr.com/article/81387/</guid></item><item><title>蚊子如何调节体温？
+</title><link>http://www.guokr.com/article/81386/</link><description>&lt;div class="document"&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYjAveG8vcmUvYjB4b3Jl
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYjAveG8vcmUvYjB4b3Jl
+LnBuZw==
+ /&gt;
+&lt;p&gt;许多吸血昆虫会在进食的同时嘘嘘，这样它们就可以避免吸入过多的液体，还能从血液中吸收更多的养分。但有些种类的蚊子还会进行一种名为“预排尿”的活动，它们不从吸取的血细胞中榨取营养物质，而是直接分泌出几滴刚吸入的新鲜血液。&lt;/p&gt;
+&lt;p&gt;蚊子的这种行为让科学家们感到很困惑，研究者表示，血液是一种非常珍贵的资源，吸血的风险相当的大。12月15日发表在《当代生物学》（Current Biology）杂志上的 &lt;a target="_blank" class="reference external" href="http://www.cell.com/current-biology/abstract/S0960-9822%2811%2901311-X"&gt;研究&lt;/a&gt; 显示，预排尿可以防止冷血的蚊子在享受血液大餐时体温过热，根据被叮咬动物的不同，血液的温度可以达到40℃。&lt;/p&gt;
+&lt;p&gt;实验中的斯氏按蚊（Anopheles stephensi）在进食大约一至两分钟后就会开始分泌尿液，并在腹部的末端，即肛门处进行预排尿，有时尿液在滴落之前，会先形成液珠并粘附在蚊子身上。这时一些液珠就会像汗液那样蒸发，将蚊子的腹部温度降低约4℃。&lt;/p&gt;
+&lt;p&gt;蚊子还会吸食花蜜，但是它们在享用低温、多糖的食物时并不进行预排尿。而蚊子也不是唯一一种使用食物来调节体温的昆虫，蚜虫会分泌蜜汁以防腹部温度过高，有些品种的蜜蜂在飞行时会反刍花露来保持脑部清凉。&lt;/p&gt;
+&lt;table class="docutils field-list" frame="void" rules="none"&gt;
+&lt;col class="field-name" /&gt;
+&lt;col class="field-body" /&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr class="field"&gt;&lt;th class="field-name"&gt;本文编译自:&lt;/th&gt;&lt;td class="field-body"&gt;《纽约时报》12月20日&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class="field"&gt;&lt;th class="field-name"&gt;原文:&lt;/th&gt;&lt;td class="field-body"&gt;&lt;a target="_blank" class="reference external" href="http://www.nytimes.com/2011/12/20/science/how-hungry-mosquitoes-cool-themselves.html?_r=2&amp;amp;emc=tnt&amp;amp;tntemail1=y"&gt;请看这里&lt;/a&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class="field"&gt;&lt;th class="field-name"&gt;编译者:&lt;/th&gt;&lt;td class="field-body"&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/i/1677599761/"&gt;风之精灵王&lt;/a&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class="field"&gt;&lt;th class="field-name"&gt;图片:&lt;/th&gt;&lt;td class="field-body"&gt;nytimes&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;（果壳环球科技观光团微博  &lt;a target="_blank" class="reference external" href="http://t.sina.com.cn/guokrdigest"&gt;http://t.sina.com.cn/guokrdigest&lt;/a&gt; ）&lt;/p&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">疯子精灵王</dc:creator><guid>http://www.guokr.com/article/81386/</guid></item><item><title>2011年中国人最关心什么健康话题
+</title><link>http://www.guokr.com/article/81383/</link><description>&lt;div class="document"&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaWYveWovOWMvaWZ5ajlj
+LnBuZw==
+ alt="图片来源：goodhealthhabit.com" /&gt;&lt;p class="document-figcaption"&gt;图片来源：goodhealthhabit.com&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;百度通过分析2011年全年的搜索数据，发布了“2011百度搜索风云榜”。作为百度近年来的常设项目，“搜索风云榜”历来都更偏重于自身产品的总结盘点，但今年的榜单盖头换面，带来了不少值得琢磨的新看点。比如就有我们老百姓都关心的食品安全和健康问题。而其中不少问题果壳都曾有过解读，就让我们来回顾一下吧。&lt;/p&gt;
+&lt;div class="section" id="id1"&gt;
+&lt;h1&gt;十大食品安全&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYXgvNTIvbzgvYXg1Mm84
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYXgvNTIvbzgvYXg1Mm84
+LnBuZw==
+ /&gt;
+&lt;p&gt;&lt;strong&gt;1. 塑化剂&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;塑化剂风波在2011年可谓席卷了全台湾的饮食业，从灌装饮料到面包辅料无不染指，更让大陆消费者产生了恐慌。面对如此大规模并被长期隐瞒的食品安全事件，监管问题成为了众矢之的。&lt;/p&gt;
+&lt;p&gt;【果壳视野】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/38931/"&gt;“起云剂”来了，饮料还能喝吗？&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/41430/"&gt;塑化剂到底有多可怕？&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/42003/"&gt;DEHP的毒性是三聚氰胺的20倍吗？&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;2.  瘦肉精&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;由于央视对双汇的曝光以及奥运冠军佟文的药检禁赛事件，不只一次在国内沸沸扬扬的瘦肉精再次进入了聚光灯下。对于中美瘦肉精的监管矛盾，&amp;#64;云无心 在《美国人为什么不怕“瘦肉精”？》中写到：“在严格监管的前提下，一样东西只要存在某种好处，而且遵守用量的安全线，是完全可以安全使用的———严格监管才是问题的核心。”&lt;/p&gt;
+&lt;p&gt;【果壳视野】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/13481/"&gt;美国人为什么不怕“瘦肉精”？&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/13483/"&gt;中成药里为何含有“瘦肉精”？&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;3. 地沟油&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;地沟油一词的出现已有不少的年头，但被人们熟知则缘起6月媒体对京津冀地沟油黑色产业链的起底曝光——一件原为食品残渣因被丢弃的东西，却因为通过某种不为人知的违法过程回到餐桌，在引人震怒的同时也再次敲起了食品安全的警钟。为了进行甄别，不少尚乏严谨民间方法脱颖而出，谣言粉碎机就此也进行了多次评点。&lt;/p&gt;
+&lt;p&gt;【果壳视野】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/19372/"&gt;凝固点鉴别地沟油是否靠谱？&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/73152/"&gt;用蒜子检测地沟油靠谱吗？&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;4. 染色馒头&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;染色馒头进超市，引发人们的愤慨。食品科学博士&amp;#64;范志红 指出“真正的玉米馒头最多加30%的玉米粉，而且质地比较粗糙，弹性差。如果质地细腻均匀，必然是假玉米馒头，或玉米含量微乎其微。”其实，不要说馒头事件中使用的柠檬黄不得使用于馒头，就算允许使用，也应明确告知消费者，否则就构成欺诈。&lt;/p&gt;
+&lt;p&gt;【果壳视野】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/blog/21368/"&gt;馒头事件只是冰山一角&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/blog/21432/"&gt;食品色素，在民意与科学之间&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;5. 西瓜膨大剂&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;让西瓜开裂的因素有很多，从现有的研究来看，通常使用的膨大剂并没有引爆西瓜的能力。如果没有水分、天气及肥料等条件的综合作用，它甚至都很难发挥让西瓜快速生长的作用。另外，西瓜甜不甜是跟品种相关，而不是与膨大剂。&lt;/p&gt;
+&lt;p&gt;【果壳视野】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/33426/"&gt;膨大增甜剂能让西瓜变炸弹吗？&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/50705/"&gt;西瓜能长出塑料吗？&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/21107/"&gt;草莓畸形膨大会致癌？&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;6. 骨汤勾兑&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;骨汤美味，但营养并非你想像的那样。骨头含钙，并不溶于水，一般的熬汤很难让钙溶解于汤中。而且，按照中国营养学会推荐的每日钙摄入量来说，得喝几十升骨头汤才能达标，还不如好好吃饭，多喝牛奶。况且连锁经营的面馆不可能有时间现熬骨汤，你消费的只是种概念罢了。&lt;/p&gt;
+&lt;p&gt;【果壳视野】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/56718/"&gt;骨汤美味，但营养非你想象&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;7. 矿泉水亚硝酸盐超标&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;国家质量监督检验检疫总局公布2011年7月时入境的进口矿泉水依云质量不合格，检出其所含的亚硝酸盐超标。质检总局称，这些不合格的进口矿泉水已作销毁处理。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;8. 速冻水饺细菌超标&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;“思念”水饺让我们认识了金黄色葡萄球菌。其实，金葡菌在自然界是广泛存在的，而且很容易被杀灭，但真正作恶且毒性坚强的并不是金葡君，而是它生前产生的毒素。不过，就算吃进去了金葡菌，也不可能因此而感染上肺炎。消费者对于这种可能产生危害的可能常常是以零容忍的态度来面对，但仔细论起来，这似乎并不现实。&lt;/p&gt;
+&lt;p&gt;【果壳视野】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/70095/"&gt;金黄色葡萄球菌，就在你我身边&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/71322/"&gt;吃进去的金色葡萄球菌会引起肺炎吗？&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;9. 粉冲豆浆&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;肯德基豆浆在微博上被爆是由豆浆粉冲调，引起公众很大的不满，一方面认为豆浆粉冲调的豆浆不应该卖那么贵，另一方面，也对粉冲豆浆的营养和安全提出质疑。确实，正规豆浆粉在食品安全上是可信赖的，但其营养确实不如现磨豆浆。&lt;/p&gt;
+&lt;p&gt;【果壳视野】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/59381/"&gt;豆浆粉vs醇豆浆，哪个好？&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;10. 超市有机蔬菜造假&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;在食品安全问题日益突出的时候，在经济允许的条件下，人们更倾向于选择有机食品。但实际上，很多标榜有机的食品，并非真正意义上的有机食品，它们只是披着一层有机的外衣。这一切只是不法商家的投机游戏。华南农业大学教授、广东省蔬菜产业协会副会长陈日远说，真正的有机对环境的要求非常高，离城市没有一定距离，是种不出有机蔬菜的。&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id16"&gt;
+&lt;h1&gt;十大健康问题：&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMjUvbzgvcTAvMjVvOHEw
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMjUvbzgvcTAvMjVvOHEw
+LnBuZw==
+ /&gt;
+&lt;p&gt;&lt;strong&gt;1.    食品安全&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;瘦肉精、地沟油、染色馒头、塑化剂，各种名词顺口溜般的流传于网络，足以证明今年网友对食品安全的关注。甚至由此展开上面那张“十大食品安全问题”榜单。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;2.    颈椎病&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;颈椎病成为网络关注健康问题的榜眼，这是许多人始料未及的。或许，一种几乎无法治本的疾病更会激发出人们求医问药的决心。可以想见，在生活压力与休息锻炼日渐针锋的今天，颈椎病对我们的威胁仍在步步紧闭。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;3. 电脑辐射过量&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;过去一年里，源于日本地震中核泄漏事件的影响，任何事物沾上“辐射”两字便有如死神暗临。与网友日夜对视的电脑常常落得一个膝盖中箭、众叛亲离的下场。对于辐射的种种流言，谣言粉碎机不只一次的出动镇压，观其现状，我们只能说科学传播之路，依然崎岖重重。&lt;/p&gt;
+&lt;p&gt;【果壳视野】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/6606/"&gt;洗脸+仙人掌，防电脑辐射？&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/post/80130/"&gt;瘦驼：孕妇要不要穿防辐射服？&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;4.    都市综合病&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;“综合”、“病”两个词有着与生俱来的勾搭特性：老年综合病、手机综合病、中关村综合病，凡此种种。任何词语都能与之碰撞出澎湃的基情。所谓的“都市综合病”本身也并不符合“疾病”的定义，只能说它以一种非常不严谨的措辞，形容出现代都市人的一致性生活状态。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;5.    亚健康问题&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;“亚健康”作为都市病青梅竹马的玩伴儿，自然而然的成为本顺位的主角。两兄弟的结局类似，世界卫生组织对“健康”的定义：一种在身体上、精神上的完满状态，以及良好的适应力，而不仅仅是没有疾病和衰弱的状态。正是通过对“即使你没有病，也可能不健康”的非理性炒作，“亚健康”这一概念堂而皇之的成为商界的救命稻草。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;6.    白领意外流产增加&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;对于耸动的标题，人们总充满好奇，特别是主角就是自己的时候。在没有任何主流媒体铺垫的情况下，“白领”“意外”“流产”“增加”四大网络热词硬生生拼凑出了一幅骇人的图景。&lt;/p&gt;
+&lt;p&gt;【果壳视野】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/3255/"&gt;流产是件伤“心”事&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/6926/"&gt;浓情蜜意情人节，意外怀孕怎么办？&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/64502/"&gt;人流无痛，就不怕怀孕了吗？&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;7.    pm2.5&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;年底的北京一时成为全国人民眼中琢磨不透的“雾城”，“pm2.5”的概念也突然从环境专业的课本里跑了出来，成为人们茶余饭后的焦点话题。果壳达人之一的谭知还也以此为题，撰写了一篇详细的日志。&lt;/p&gt;
+&lt;p&gt;【果壳视野】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/70045/"&gt;北京的空气污染到底有多严重？&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/66640/"&gt;空气污染真的能折合成吸烟数吗？&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;8.    心理疾病增加&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;心理疾病随着社会的发展逐步被人们所重视，媒体上诸如抑郁症的报道也随之日渐增加。但信息的丰富并不意味着心理疾病人数发生了迅速的增长，对此的恐慌更没有必要。被忽视的群体终于获得关注，何尝不是一件好事。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;9.    过劳死亡增多&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;过劳死亡事件在去年发生了多次，几乎每次都能在网络上引起轰动。高强度的工作之间要定期的休息与调整，这是现代医学理论公认的常识。但除了休息调整，期望大家也能对自我保有一颗关注之心，对基本的医学知识有所了解，随时留意健康的异常。&lt;/p&gt;
+&lt;p&gt;【果壳视野】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/20477/"&gt;死于脑膜炎算是“过劳死”吗？&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/65465/"&gt;猝死，明天你有可能吗？&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;10. 视力急剧下降&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;最后一位的话题依然源自现代都市生活——无论是工作还是休息，人们的用眼习惯都已发生了巨大的变化。我们如此密集的关注着各种屏幕，孩子们也早早的习惯起眼镜的加持。视力不应成为健康的“二等公民”，亟需提起我们更高的重视。&lt;/p&gt;
+&lt;p&gt;【果壳视野】：&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/21649/"&gt;豆沙绿？护眼并非如此简便&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;PS： “网友们用特有的方式，使一些在现实中需要很多成本才能实现的东西变成一种社会力量。”谢谢你们的喜爱，使谣言粉碎机成为2011年十大网络助力之首。&lt;/p&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaWQvcHkvY3IvaWRweWNy
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaWQvcHkvY3IvaWRweWNy
+LnBuZw==
+ /&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">健康朝九晚五</dc:creator><guid>http://www.guokr.com/article/81383/</guid></item><item><title>2011年值得推荐的20款游戏
+</title><link>http://www.guokr.com/article/81366/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;又到年底盘点时，2011年对电玩界来说是一个值得纪念的年份，各大游戏厂商推出了比往年更多的大制作，而独立游戏制作者们也在今年贡献了许多佳作。美国《连线》杂志评选出了2011年最令人兴奋的20款电子游戏，平台不限，从TV GAME、PC 到掌机和手机无所不包。&lt;/p&gt;
+&lt;div class="section" id="no-20-to-the-moon"&gt;
+&lt;h1&gt;NO.20 《To The Moon》&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdHkvaGMvaGkvdHloY2hp
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdHkvaGMvaGkvdHloY2hp
+LnBuZw==
+ /&gt;
+&lt;p&gt;虽然《To The Moon》只是一款独立游戏，其画面、游戏性、音乐或许都没办法和那些耗费巨万的大厂出品相比，但是它却是所有游戏编剧都必须通关的一部作品。这部游戏并不是一个关于拯救世界或是英雄主义的篇章，也没法给玩家带来那些激情和刺激，但是作者却从一个死去的老人的角度为我们讲述了一个关于爱和交流的美丽故事，四个多小时的游戏流程仿佛一篇美丽的诗章，在故事的结尾，也许你也会与主人公一同默默流泪。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="no-19-2"&gt;
+&lt;h1&gt;NO.19 《巫师2》&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd3MvaHkvNmYvd3NoeTZm
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd3MvaHkvNmYvd3NoeTZm
+LnBuZw==
+ /&gt;
+&lt;p&gt;如果你已经被《质量效应2》和《龙腾世纪》游戏进程中几乎一边倒的真善美选项折磨得欲哭无泪，想要满足一下自己的小邪恶的话，《巫师2》绝对符合你的需求。在本作中，善与恶并没有绝对的划分，一切都处于灰色领域，而玩家在游戏中做出的每一个决定都有着长远的影响，也许你现在帮了某个NPC一把，他在近结局时才会给你回报。这种极强的角色扮演真实感也正是本游戏迷人的地方。与此同时，《巫师2》还拥有优秀的画面与打斗系统，绝对是不可错过的一款佳作。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="no-18"&gt;
+&lt;h1&gt;NO.18 《双子座行动》&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZXMvNzAvaHQvZXM3MGh0
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZXMvNzAvaHQvZXM3MGh0
+LnBuZw==
+ /&gt;
+&lt;p&gt;作为一部黑色科幻冒险游戏，本作完美集合了《银翼杀手》和《猴子岛》曲折的情节和令人难以自拔的解谜过程，虽然指点式游戏的老手们不会觉得这款游戏有多困难，但其充实而连贯的情节绝对会让你忍不住通宵攻关。作为2010年独立游戏界学生展示单元的冠军作品，相信热爱复古解谜类游戏的玩家绝对会对它爱不释手。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="no-17"&gt;
+&lt;h1&gt;NO.17 《火箭飞人》&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvNHUvbXcvMmIvNHVtdzJi
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvNHUvbXcvMmIvNHVtdzJi
+LnBuZw==
+ /&gt;
+&lt;p&gt;一款在App Store中售价仅0.99美元的游戏能拥有如此强的可玩性的确出人意料，本作摈弃了大部分复杂的操作和属性——玩家掌握点击屏幕让小飞人升高、再移开手指让他降落这两个最简单的操作，然后用完成任务赚来的金币购买交通工具和解锁后续关卡即可。Halfbrick用这款游戏让大家不再只顾切水果，而开始爱上摆弄这个火箭飞人，也再次证明自己的确是个优秀的手机游戏厂商。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="no-16-6"&gt;
+&lt;h1&gt;NO.16 《英雄传说6：空之轨迹》&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvM24vb3QvMTMvM25vdDEz
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvM24vb3QvMTMvM25vdDEz
+LnBuZw==
+ /&gt;
+&lt;p&gt;爱情、背叛、优秀的打斗系统、无数支线任务……你对PSP上JRPG游戏的所有幻想都能在这里得到实现，包括一个强制性的滑稽变装场景。好吧，它上榜还有疑问么？&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;注：&lt;/strong&gt; 美版空之轨迹今年才上市。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="no-15"&gt;
+&lt;h1&gt;NO.15 《子弹风暴》&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcDAvYTEvcGkvcDBhMXBp
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcDAvYTEvcGkvcDBhMXBp
+LnBuZw==
+ /&gt;
+&lt;p&gt;无视本作中呆头呆脑的人设和生硬的对话，其流畅的操作感、连击系统和独创的“技巧杀戮”机制绝对能让你一次发泄个够。快去买一盘游戏光碟并跟我一起祈祷Epic赶紧出下一部续作吧！&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="no-14-3"&gt;
+&lt;h1&gt;NO.14 《神秘海域3：德雷克的诡计》&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdXMva2sveDYvdXNra3g2
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdXMva2sveDYvdXNra3g2
+LnBuZw==
+ /&gt;
+&lt;p&gt;《神秘海域3》所讲述的故事也许很难理解，其中很多小故事陷阱也并不讨好，但是众多人物开始互动时，顽皮狗工作室的强大叙事功力就显现出来了：很少有人能像艾米·汉妮恩和她的团队一样将游戏角色刻画得如此深入，玩家甚至能对主人公南森·德雷克和他的强盗团之间反反复复的纠葛感同身受。《神秘海域》系列组品有点像那部经典的电影《印第安纳·琼斯》，不过德雷克比哈里森·福特扮演的考古学家可有意思多了。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="no-13"&gt;
+&lt;h1&gt;NO.13 《超级兄弟：剑与巫术》&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMmgvN3QvM28vMmg3dDNv
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMmgvN3QvM28vMmg3dDNv
+LnBuZw==
+ /&gt;
+&lt;p&gt;这款“指点式”冒险游戏总让玩家感觉是为自己量身定做的——它能让你在适当的时刻无比放松，也能瞬间让你的心跳上升到120。它不像你之前玩过的任何一款类似游戏，不会让你为了解谜而重复做无用功直到抓狂。总之，它很赞。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="no-12"&gt;
+&lt;h1&gt;NO.12 《雷曼：起源》&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvODUvOHIvNDgvODU4cjQ4
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvODUvOHIvNDgvODU4cjQ4
+LnBuZw==
+ /&gt;
+&lt;p&gt;本作虽然是一款2D横版过关游戏，但其丰富多彩的手绘画面细节绝对是年度最佳游戏画面表现之一，其唯一缺点就是画面太美让玩家经常停下来欣赏风景导致挂掉。与《新超级马里奥兄弟》一样，在Wii平台上的《雷曼：起源》拥有接触的单/多人游戏体验，但是本作更为流畅和多样化。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="no-11-3"&gt;
+&lt;h1&gt;NO.11 《抵抗3》&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvemcveDYvZnMvemd4NmZz
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvemcveDYvZnMvemd4NmZz
+LnBuZw==
+ /&gt;
+&lt;p&gt;大家都记得《抵抗1》为PS3开拓了大片疆土，但是续作的表现却差强人意。但是失眠症游戏工作室的回归让《抵抗3》重新焕发了活力。罗伯特·海莱茵撰写了一个斯坦贝克式的游戏脚本，又加上了最牛逼最华丽的武器，让本作的单人游戏模式质量大大超越前作。近期官方又发布了新的补丁包，增加了生存模式和七首来自顶尖金属乐队Mastodon的歌曲。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="no-10-2"&gt;
+&lt;h1&gt;NO.10 《死亡空间2》&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMTgvZmgvcGcvMThmaHBn
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMTgvZmgvcGcvMThmaHBn
+LnBuZw==
+ /&gt;
+&lt;p&gt;与前作相比，本作提高了游戏运行的流畅性，这也让游戏中那些让人尖叫的画面更为突出，即便你满载弹药，什么怪物都无法阻挡你前行的步伐，但是你还是会在它们突然出现时惊声尖叫。所以科幻恐怖游戏的爱好者们，你们绝对不能错过《死亡空间2》&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="no-9"&gt;
+&lt;h1&gt;NO.9 《杀出重围：人间革命》&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbHQvNzUvYmovbHQ3NWJq
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbHQvNzUvYmovbHQ3NWJq
+LnBuZw==
+ /&gt;
+&lt;p&gt;在所有2011年推出的游戏中，本作可能是扑街可能性最大的——“珠玉在前”这个词最为适合《杀出重围·人间革命》，有两部被历史所肯定的前作，本作的压力不是一般的大。幸好它并没有让我们失望。本作呈现出了所有吸引人的要素：阴冷的未来世界、扭曲的阴谋、疯狂的肢体改造和新颖的黑客能力拓展，这也让最后的BOSS战有了更多的可能性。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="no-8"&gt;
+&lt;h1&gt;NO.8 《黑暗之魂》&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvdm8vMjAvaWEvdm8yMGlh
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvdm8vMjAvaWEvdm8yMGlh
+LnBuZw==
+ /&gt;
+&lt;p&gt;在这个所有游戏都追求“操作简单容易上手”八个字的时代，居然还会出现《黑暗之魂》这样需要玩家认真研究游戏基本操作的奇葩，并且其游戏难度之大简直媲美曾经的那部国产“神作”《血狮》，基本上就是怎么不让你过怎么来，随时随地玩家都有可能挂掉。不过这也正迎合了许多玩家的好胜心，当你终于将其通关之时，那种舒爽真是无以言表。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="no-7"&gt;
+&lt;h1&gt;NO.7 《堡垒》&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOHYvOWEvbGsvOHY5YWxr
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOHYvOWEvbGsvOHY5YWxr
+LnBuZw==
+ /&gt;
+&lt;p&gt;《堡垒》的手绘式游戏画面精致而细腻，搭配上具有强烈感情色彩的游戏音乐已经让众多玩家倾倒其中。更出彩的是，游戏的旁白系统会在整个游戏过程中为你进行解说，从你选择的武器到你犯下的错误，事无巨细统统包括；再加上一个引人入胜的故事，堪称完美。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="no-6-3d"&gt;
+&lt;h1&gt;NO.6 《超级马里奥3D》&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaTEvaWovbDkvaTFpamw5
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvaTEvaWovbDkvaTFpamw5
+LnBuZw==
+ /&gt;
+&lt;p&gt;就想曾经的《超级马里奥64》拯救了蹩脚而古旧的N64平台一样，《超级马里奥3D》也扮演了3DS的救世主角色。让本作大获成功的不仅仅是堪比《超级马里奥银河》的游戏质量，更在于它解答了人们对于3DS平台的诸多疑虑。这款游戏真正让3DS呈现出了完全裸眼3D的效果，也让每个玩家再也舍不得在游戏时把3D模式关闭。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="no-5"&gt;
+&lt;h1&gt;NO.5 《黑色洛城》&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveDEvdngvMWcveDF2eDFn
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveDEvdngvMWcveDF2eDFn
+LnBuZw==
+ /&gt;
+&lt;p&gt;如果你无法接受本作有时稍显勉强和矛盾的游戏设置的话，那么你完全可以将它放到年度最差名单中。但是那令人惊讶的角色真实性、逼真的动画效果和扣人心弦的故事都让玩家不得不忽视一些无伤大雅的小缺点了。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="no-4-2"&gt;
+&lt;h1&gt;NO.4 《传送门2》&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvN2svbmMvanAvN2tuY2pw
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvN2svbmMvanAvN2tuY2pw
+LnBuZw==
+ /&gt;
+&lt;p&gt;作为一款创新了射击游戏玩法的大作，《传送门2》用“隔空取物”的独有操作大大挑战了玩家的想象力和空间思维能力，同时本作的解谜部分也堪称上佳，更别忘了还有著名演员斯蒂芬·莫昌特和J·K·西蒙斯的倾情献声，这一切都证明本作并没有给《传送门》系列抹黑。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="no-3"&gt;
+&lt;h1&gt;NO.3 《蝙蝠侠：阿甘之城》&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdjgvYWwvdHMvdjhhbHRz
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdjgvYWwvdHMvdjhhbHRz
+LnBuZw==
+ /&gt;
+&lt;p&gt;季军属于《蝙蝠侠：阿甘之城》。“成为蝙蝠侠”——这一点已经足够让无数玩家疯狂了，再加上比之前更自由流畅的打斗、更大的高谭城、更多的新鲜小玩意儿、解谜奖杯、挑战和坏人们，这是一个更宽广自由的游戏天地，等待你来探索。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="no-2"&gt;
+&lt;h1&gt;NO.2 《塞尔达传说：天空之剑》&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYnAvZWEvaWkvYnBlYWlp
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYnAvZWEvaWkvYnBlYWlp
+LnBuZw==
+ /&gt;
+&lt;p&gt;有些人会告诉你这款游戏仅仅是增强了体感功能，让玩家能更精确地用wii摇杆操纵手中的武器，但是我们要告诉你的是，一个简单的硬件提升是无法涵盖本作的众多突破的——除了保留了经典的“you found an item”提示音和几个熟悉的NPC之外，几乎《塞尔达传说》系列所有方面的细节都被重新考虑并修改过。而本作的大卖也证实了这次全面创新的成功。亚军非它莫属。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="no-1-5"&gt;
+&lt;h1&gt;NO.1  《上古卷轴5：天际》&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZGcvbGEvczYvZGdsYXM2
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZGcvbGEvczYvZGdsYXM2
+LnBuZw==
+ /&gt;
+&lt;p&gt;五年磨一剑，Bethesda没有让任何人失望，他们创造了一个广阔而充满生机的的游戏世界，甚至让人怀疑这个世界是不是真实存在，从熙熙攘攘的巫师学院到充满尸体的废弃灯塔，每一个细节都无比真实，每一个地方都有你想要探寻的奇妙故事。无与伦比，这是我们对《天际》的评价。&lt;/p&gt;
+&lt;p&gt;尽管你已经在这个游戏上耗费了上百个小时，并且还有大堆游戏等着你去玩，但是你还是忍不住要打开它——这就是一个冠军游戏才能拥有的强大吸引力。&lt;/p&gt;
+&lt;blockquote&gt;
+原文的标题其实是2011年最佳20游戏。但如果真用这个标题，几乎可以预见回帖大多数是这样的形式：居然没有XXX！就不刺激你们的神经了。&lt;/blockquote&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;图片和信息来源： &lt;a target="_blank" class="reference external" href="http://www.wired.com/gamelife/2011/12/best-games-2011"&gt;wired&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">小行踪</dc:creator><guid>http://www.guokr.com/article/81366/</guid></item><item><title>网易的猪会好吗？丁家猪“奢华”背后有学问
+</title><link>http://www.guokr.com/article/81358/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;自从2009年网易CEO丁磊高调宣布他要养猪以来，这一消息就大大引起了人们的好奇。网易多年从事互联网技术，和又脏又笨的猪扯得上关系吗？最近网易公布了他们的猪场规划，称他们的猪会“蹲马桶、睡公寓、不吃药”，听起来比人还要舒服。无论猪生前是多么锦衣玉食，最后都得在刀下挨那么一下子，把猪场安排得这么富丽堂皇有必要吗？俗话说外行看热闹，养猪的门道还得让内行来说说。下面，我们就来逐一分析一下“丁家猪”的生存条件。&lt;/p&gt;
+&lt;div class="section" id="id1"&gt;
+&lt;h1&gt;高宅大院，尊享宽阔独享空间&lt;/h1&gt;
+&lt;p&gt;首先看看全景。猪场的选址设计是一门学问，平坦开阔、向阳避风自不必说，还需要按照风向依次安排员工的行政管理与生活区，猪的养殖区、隔离区，使各区分开，以防疫病随风势传染。在生产区中，不同类别的猪也要分成不同猪舍。&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveGQvOTQvM2YveGQ5NDNm
+LnBuZw==
+ alt="网易提供的养猪场示意图。从这张图可以看到，该猪场可谓依山傍水，环境优雅。" /&gt;&lt;p class="document-figcaption"&gt;网易提供的养猪场示意图。从这张图可以看到，该猪场可谓依山傍水，环境优雅。&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;在生产区中，公猪、母猪、断奶仔猪、商品猪各有各的猪舍，各猪舍之间有消毒池作为关卡，以便于防疫。丁家猪的低调神秘其实也与此有关，试想如果全国记者全跑到猪舍去采访，肯定会给防疫工作带来不少麻烦，那是任何一个猪场都消受不了的。&lt;/p&gt;
+&lt;p&gt;较为奇特的是，网易猪舍将采用“空中楼阁”的建设方式。实际上楼房养猪在我国已经颇有尝试，比如杭州某种猪场建有六层楼房猪舍。高楼养猪有环境干燥、通风较好、便于防治疫病的优点，但多被用于节约猪舍占地面积，以发展高密度饲养，因此还没有摆脱“猪挤猪”的传统模式。而网易的猪场在高层饲养的同时，还保证了猪只活动自由：新闻称“丁家猪”的“猪均占地面积”是2平方米。这可以使得猪群不会过于拥挤，改善猪舍的环境、通风、防疫，避免猪与猪之间爪牙相向。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h1&gt;设施配套，引领舒适生活典范&lt;/h1&gt;
+&lt;p&gt;有了这么大的猪舍面积，就可以划分出采食、睡眠、活动、排泄等不同的区域（相当于人的餐厅、起居室、客厅和卫生间），让猪成长得更加从容舒适。这样生产出来的猪肉，其品质和安全性也会有所提高。
+不过，设置这么多功能区，猪自己会用吗？这一点新闻里说了，不仅猪的生活起居要分区进行，它们还要被训练“蹲马桶”。事实上大家对这个词有点误解，它的原意是指两件事，一是让猪学会定点排便，二是排污设施采用“抽水马桶”式的收集方式。&lt;/p&gt;
+&lt;p&gt;猪是一种聪明而爱清洁的动物，通过训练完全可以学会上厕所，这样，活动区就能保持干爽。不过，我国较规范的猪舍目前一般采用粪尿分离式的收集方式，将猪粪和猪尿分开治理，而网易所说的模拟抽水马桶“粪尿在第一时间被冲进封闭管道”的方式虽然较为自动化，但若设计不当，可能会带来耗水量和排污量增大的弊端。&lt;/p&gt;
+&lt;p&gt;在生活起居上，如果采取一定的措施，比如适当提高睡眠区的温度，猪也愿意去固定位置睡眠。它们甚至懂得只将身体放在温暖的环境中，而暴露出头部以呼吸凉爽新鲜的空气，就像我们在被窝里裹住身子却露出头一样。所以，采取这些措施是符合猪的行为学特性的，也会使猪更健康地成长。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h1&gt;高端管理，领航未来猪居模式&lt;/h1&gt;
+&lt;p&gt;网易作为一个互联网公司，我们总希望它能在猪的饲养管理中增加点“科技含量”，比如让猪从小就学着刷刷微博什么的，当然，这是夸张的说法。丁磊本人曾公开表示过会将“云计算”“物联网”等思路融入到猪的饲养中去。我们猜想，这可能会用到一些信息化管理技术，比如在猪的耳标上应用无线射频终端收集、记录信息，在计算机上实行统一管理，这样也便于猪肉出售后的质检和回溯。目前这种技术在国内也有一定范围的推广。&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZnMvaHYvazEvZnNodmsx
+LnBuZw==
+ alt="猪真的能实现“放养”吗？也许这只是一种美好的愿望。图片来自blueridgeblog.blogs.com" /&gt;&lt;p class="document-figcaption"&gt;猪真的能实现“放养”吗？也许这只是一种美好的愿望。图片来自blueridgeblog.blogs.com&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;我国千百年来的农户散养模式较为粗放，用泔水、玉米秸等一切能利用的食料养猪，效率低下，无法满足人们对猪肉的需求。二十世纪八十年代后引进了第二代集约型的工业化养殖模式，一跃成为养猪大国，养猪量已占全世界的一半。正由于猪肉的需求、产出量如此之大，也就出现了生产过于追求高效而无法兼顾动物福利、环境保护的弊端，也在一定程度上制约了猪肉质量和安全性的提升，甚至遭遇国际贸易壁垒，因此并不是养猪发达国家。&lt;/p&gt;
+&lt;p&gt;相比之下，目前对猪生产福利较为注重的主要是美洲、澳大利亚和荷兰、丹麦等欧盟国家，他们注重增强各种福利设施建设，取消固定身体（如限位栏）、剪牙断尾等使猪产生不适的管理手段，甚至直接废除集约圈养而返回放养模式，想法设法使猪按照天性生长，做到“生前康乐，死后安全”。网易尝试新的养猪技术，“让猪活得有尊严”，或许能引领我国养殖模式的新潮流也仍未可知。&lt;/p&gt;
+&lt;blockquote&gt;
+不过，对养猪如此高的投入，一方面肉价会有所上升；另一方面，这种养猪方式需要的占地等成本并非每个地区、每户猪农都能承受，它在国内的推广还有很长的一段路要走。这样的猪肉何时才能真正走向老百姓的饭桌？我们拭目以待。&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;相关资料：&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://tech.163.com/11/1220/03/7LMFU3LM000915BF.html"&gt;网易发布养猪场规划 开始兑现公开技术成果承诺&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://tech.hexun.com/2011-12-05/135976960.html"&gt;丁磊:把云计算物联网融入养猪事业&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://info.china.alibaba.com/news/detail/v0-d1010053768.html"&gt;欧盟确定2012年禁用母猪限位栏&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://news.sina.com.cn/w/2004-01-12/13091566870s.shtml"&gt;要停止圈养采用放养 欧洲的猪也有高福利&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://wenku.baidu.com/view/328c6368a45177232f60a2ad.html"&gt;楼房养猪杂谈&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;更多与猪相关：&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/50570/"&gt;硫酸酮喂出来的猪，你还敢吃吗？&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/post/81367/"&gt;猪都玩iPad了&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">暗号</dc:creator><guid>http://www.guokr.com/article/81358/</guid></item><item><title>独裁者的六大共同特质
+</title><link>http://www.guokr.com/article/81353/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;独裁者有着怎样的人格特质？《科学美国人》博客作者杰森•古尔德曼（Jason G. Goldman）近日撰写博文，介绍了独裁者心理学研究。&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcGQvNDgvZm8vcGQ0OGZv
+LnBuZw==
+ alt="从左至右依次为金正日、希特勒和萨达姆。" /&gt;&lt;p class="document-figcaption"&gt;从左至右依次为金正日、希特勒和萨达姆。&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;独裁者一直是心理学家非常感兴趣的研究对象，尽管为什么普通、理性的大众会狂热地追随那些危险的独裁者也是值得研究的课题，但有些心理学家对独裁者本身的心理有更浓厚的兴趣。或许，当心理学家接到一个响当当的大人物的案例，会觉得更有趣吧。&lt;/p&gt;
+&lt;div class="section" id="id1"&gt;
+&lt;h1&gt;荣格眼中的希特勒和墨索里尼&lt;/h1&gt;
+&lt;p&gt;1939年，心理学家卡尔•荣格（Carl Jung）在柏林会见了希特勒和墨索里尼，并对他们进行观察。科罗拉多大学的人格心理学家库里奇（Coolidge）和赛格尔（Segal）对此写道：“荣格说希特勒从来不笑，看起来总是心情不好，好像在生闷气。荣格判断希特勒是性冷淡，并且残忍毫无人性；希特勒的人生只有一个目标：建立第三帝国。他要通过建立一个强大的日耳曼帝国，来排除心中的不安，并洗刷德国在历史中受到的耻辱。”希特勒让荣格感到恐惧，而对墨索里尼，荣格的评价则完全不同。他说墨索里尼“看起来和普通人一样，亲和而富有活力。”&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h1&gt;独裁者的六大共同特质&lt;/h1&gt;
+&lt;p&gt;荣格的经历只能算是意外的收获，因为对于大部分人来说，与独裁者一对一交流的机会极为罕有，而心理学家或神经病学家与独裁者进行面对面的临床诊断的可能性更是微乎其微。因此，对这些独裁者的性格、心理研究只能通过独裁者身边的线人提供的内部信息作为参考。尽管这不是最理想的办法，但它也确实为科学家研究那些臭名昭著的独裁者的内心世界提供了宝贵信息。一份报告显示，通常来讲，独裁者身边的人对独裁者的自我评价都表示“谨慎赞同”，而这些线人们互相也大都彼此赞同各自对独裁者的观察。即便在传统的心理疾病研究中，病患身边的亲人朋友对病人的表述也能为治疗提供重要帮助，因为心理病患自身往往无法向医师提供准确的信息。&lt;/p&gt;
+&lt;p&gt;2007年，库里奇和赛格尔找来了5位研究希特勒的专家，请5位专家根据《精神疾病诊断与统计手册》第五版（DSM-IV）中的精神病理学症状和人格缺陷进行诊断。五位专家的诊断结果中，希特勒在以下几个方面存在较大人格缺陷：偏执、反社会、过度自恋以及施虐倾向。根据他人对希特勒个性的描述，希特勒也可能有精神分裂症的倾向，包括过度夸张、异常的思考方式。&lt;/p&gt;
+&lt;p&gt;2007年，库里奇和赛格尔用类似的方法对萨达姆的性格作了研究。他们找来了11个自称是私下与萨达姆关系密切的伊拉克成年人，认识萨达姆的平均时间大概是24年。通过这些人对萨达姆的描述，研究人员发现萨达姆有较严重的偏执、反社会、过度自恋以及施虐倾向等人格缺陷，其中施虐倾向程度比希特勒更甚；与希特勒类似，萨达姆也显示出了一定程度的精神分裂症。研究人员通过对比萨达姆与希特勒的人格特点，发现两人的性格有较高的相似性，相关系数达到0.79。&lt;/p&gt;
+&lt;p&gt;根据以上2组研究，库里奇和赛格尔提出了独裁者总体上可能具备的六大人格缺陷：施虐倾向、反社会、偏执、过度自恋、精神分裂、人格分裂。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h1&gt;金正日更像萨达姆？&lt;/h1&gt;
+&lt;p&gt;2009年，库里奇和赛格尔将他们的研究推广到了最近刚刚过世的前朝鲜最高领导人金正日的身上。经人引荐，库里奇和赛格尔找到了一位韩国心理学家，据说这位匿名的心理学家曾经对金正日进行过“深入的心理培训”，并且与金正日建立了密切的私人关系。这位心理学家同意为库里奇和赛格尔提供他对金正日心理情况的报告。&lt;/p&gt;
+&lt;p&gt;通过这份报告，金正日也表现出独裁者六大人格缺陷： 施虐倾向、反社会、偏执、过度自恋、精神分裂、人格分裂。&lt;/p&gt;
+&lt;p&gt;下表显示了三大独裁者的人格缺陷状况，包括在《精神疾病诊断与统计手册》第五版（DSM-IV）中提到的14项人格缺陷以及精神分裂症、精神失常等方面。精神疾病以严重程度排序，三大独裁者中，排名前六的人格缺陷都相同（尽管有不同顺序），同时在精神分裂症、精神失常等方面都有较为严重的症状。&lt;/p&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveGkvamgvb3EveGlqaG9x
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveGkvamgvb3EveGlqaG9x
+LnBuZw==
+ /&gt;
+&lt;p&gt;随后的比较发现，金正日和萨达姆的性格更为类似（性格特征相关系数达到0.67），而金正日与希特勒的性格特征相关系数只有0.2。金正日和萨达姆的施虐倾向都是他们最严重的人格缺陷，程度也几乎相同：在统计上，比正常人平均值高出3个以上的标准差！&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id4"&gt;
+&lt;h1&gt;这些人为什么能掌权？&lt;/h1&gt;
+&lt;p&gt;问题又来了：这些有着严重人格障碍的人是如何获得并能维持如此高的职位，如此大的权力呢？毕竟这些症状，例如精神分裂症，是极度损耗人的精力的。这一问题尚未有明确答案，但也有其他的例子，如臭名昭著的连环杀人犯查尔斯•曼森（Charles Manson）和邪教头目吉姆•琼斯（Jim Jones，美国人民圣殿教创始人、领袖。1978年11月18日，在圭亚那琼斯镇，吉姆•琼斯同900多名信徒一起集体自杀），他们都有严重的精神分裂症状，但也能对他人产生强大的影响力，只不过程度上比起金正日和希特勒来要小得多。（详见 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/37892/"&gt;曼森家族：在上帝和恶魔之间&lt;/a&gt; ）&lt;/p&gt;
+&lt;p&gt;库里奇和赛格尔强调：目前最新的《精神疾病与诊断手册》第六版（DSM-IV-TR）中，对精神分裂症、偏执症的判定标准包括患者对某些内容产生被害妄想、自身夸大错觉等症状，同时表现出焦虑、愤怒、冷漠、好辩等特性。《精神疾病与诊断手册》中同时指出，被害妄想、自身夸大错觉会使精神分裂者产生暴力倾向，并在人际交往中表现出自大、居高临下的态势，但他们并不会表现出认知障碍，通常来讲，他们都能在工作和生活中表现出良好的判断力。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id6"&gt;
+&lt;h1&gt;本研究仅供参考&lt;/h1&gt;
+&lt;p&gt;对于独裁者的人格研究，有三点重要说明：&lt;/p&gt;
+&lt;p&gt;首先，也许是最明显的，独裁者的性格上存在很多相似性，但这些相似的特性并不是产生独裁者的原因。尽管了解“独裁者六大人格缺陷”有助于今后在外交与独裁者打交道时掌握更多技巧，但仍存在大量有这些人格缺陷之一或者全部这六点人格缺陷的人，他们永远不会成为独裁者、杀人犯或恐怖分子。而且也许有的独裁者有其他人格缺陷或精神疾病，精神疾病的出现种类和概率并不会在人群、时空中有所不同。&lt;/p&gt;
+&lt;p&gt;第二，不同的文化会在何种程度上对精神疾病的诊断造成影响？当然，某些疾病的诊断是跨文化、有普适性的，例如精神分裂症。但不同文化对相同症状的重要性及严重程度却有不同判断。因为精神病的病因是潜在的生理机能失调、而诊断结果是由人决定的。尽管现在越来越强调科学研究的客观性、严谨性，但不同的研究者自身总会存在一些细微的偏向。类似的，线人对三大独裁者的报告是基于美国的评判标准做出的评价，而精神病的诊断通常是根据统计学上的稀有程度来的（得分区间出现的概率越小，精神病程度越高），而这就会产生问题，如果根据朝鲜的文化背景，金正日将军在某些方面的得分可能比美国文化背景下的得分或高或低，如此一来，对精神疾病严重程度的判断也有所不同了。&lt;/p&gt;
+&lt;p&gt;第三，在对三大独裁者的研究中，只有萨达姆身边的线人明确透露了自己与萨达姆的关系，而金正日和希特勒身边的线人并未向研究人员提供关于他们本人的详细个人信息，由于无法确定信息提供者的真实身份，对希特勒和金正日的心理研究可能因此存在某些偏差。另外，出于伦理考虑，美国心理协会（American Psychological Association）提出了“金水法则（Goldwater rule）”，规定：“在没有直接对病人进行诊断、及未获得病人本人或其法定监护人允许的情况下，职业心理医师不能对病人的情况发表专业评论。”可以看出，“金水法则”对心理从业人员同媒体打交道的方式做出了明确限定，然而，由于库里奇和赛格尔等人既没有对独裁者进行直接诊断，更没有获得独裁者本人或其监护人同意，因此，他们的这项研究并没有遵循“金水法则”的规定。&lt;/p&gt;
+&lt;p&gt;但科学研究也许总要打破一些条条框框，毕竟这些研究成果看起来很有趣，说不定在以后会很有价值。我们也许永远无法确定库里奇和赛格尔对金正日的研究多大程度上反映了金正日将军的真实性格，但毕竟，金正日、希特勒、萨达姆这三大独裁者的性格在某些方面的相似性却是不容忽视的。&lt;/p&gt;
+&lt;p&gt;本文翻译自
+&lt;a target="_blank" class="reference external" href="http://blogs.scientificamerican.com/thoughtful-animal/2011/12/19/the-psychology-of-dictatorship-kim-jong-il/?WT_mc_id=SA_DD_20111219"&gt;The Psychology of Dictatorship: Kim Jong-Il&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;图片来源: Scientific American&lt;/p&gt;
+&lt;p&gt;特别感谢周欣悦老师的 &lt;a target="_blank" class="reference external" href="http://weibo.com/1900446695/xCNzpuAuG"&gt;微博&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/post/22287/"&gt;怎样加入心事鉴定组？&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">chengmine</dc:creator><guid>http://www.guokr.com/article/81353/</guid></item><item><title>成双未必皆好事
+</title><link>http://www.guokr.com/article/81341/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;正常的女人，普通的女人，最一般化的女人，有一个阴道，一个子宫（虽然痛经时的女人通常会愤恨地遐想自己如果一个子宫都没有该有多好）。如果拥有一个以上的阴道或子宫，那是非凡的女人。&lt;/p&gt;
+&lt;div class="section" id="id1"&gt;
+&lt;h1&gt;在冬天回想一个非凡的女人&lt;/h1&gt;
+&lt;p&gt;拥有双子宫双阴道，乍一听是不是像双卡双待手机一样高端？那要看你如何看待这个问题。也许对于老公来说，会感觉自己娶了两个老婆。但对女性来说，事实则可能没有这么美好。&lt;/p&gt;
+&lt;p&gt;双阴道又叫阴道纵膈，是阴道畸形的一种，常常是由于先天性胚胎期发育异常而引起的。除了阴道纵隔，较为常见的阴道畸形还包括阴道横隔、阴道斜隔、先天性无阴道等。阴道纵隔为双侧副中肾管会合后，其中隔未消失或未完全消失所致。有完全纵隔和不完全纵隔两种。完全纵隔形成双阴道，常合并双宫颈双子宫，我曾经遇到的这位患者即是如此。&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbWwvOHAvaWYvbWw4cGlm
+LnBuZw==
+ alt="图为双阴道双子宫畸形 图片来自 www.glowm.com" /&gt;&lt;p class="document-figcaption"&gt;图为双阴道双子宫畸形 图片来自 www.glowm.com&lt;/p&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h1&gt;条条大路通罗马？&lt;/h1&gt;
+&lt;p&gt;这位W女士(化名)的情况是：结婚一年多了，老公都没有发现老婆阴道有两条大路，右边是去翡冷翠，左边去罗马。去罗马的路比较好走，宽阔，于是儿子是怀在这边了。W女士自己也是去医院进行孕妇体检时做了B超，才知道自己这么特别的。&lt;/p&gt;
+&lt;p&gt;W女士考虑到自己的特殊情况，就选择了剖腹产，之后就没在意自己有“两条马路”的事，直到有一天，二人世界，老公要求去翡冷翠那条路探险，结果几周后就有喜了。她羞涩地承认，她因为看网上说畸形的一侧不容易怀孕，所以那天没有采取措施，谁知道自己的土地这么肥沃……&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h1&gt;双阴道检查&lt;/h1&gt;
+&lt;p&gt;妇科专科检查是让人有点羞涩但又很有必要的检查手段。患者需要躺在一种样子特殊的妇科床上（见 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/66844/"&gt;妇科里正在搞什么？&lt;/a&gt; ），暴露私处，医生带上手套，两根手指（通常是食指和中指）伸进患者的阴道，另外一只手不时地按压患者的腹部，双手配合来判断患者的病情。&lt;/p&gt;
+&lt;p&gt;而双阴道的情况比较特殊，在给W女士做检查时，我的两根手指伸进了非凡的“∞”字形的通道。那种感觉很神奇，跟以往的每次检查都不同，就好像自己又戴了一层肉乎乎的分指手套。患者明显一侧的阴道发育良好，中间的阴道纵隔很完整，感觉有点薄，而另一侧的阴道相对窄小。阴道是这样，那么里边的情况又如何呢？&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id4"&gt;
+&lt;h1&gt;两个子宫&lt;/h1&gt;
+&lt;p&gt;通过B超自然可以看到患者的两个子宫体，但是妇检时有一种检查的“笨办法”同样有效，那就是通过阴道直接观察！首先，通过扩阴器（ 见  &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/66844/"&gt;妇科里正在搞什么？&lt;/a&gt; ）这种长相很唬人的东西拓宽被检查者的阴道，让我们可以直视宫颈口。接着在一边的宫颈口做个标记，画○还是画X其实无所谓，只要你能认出来。接着打开另一侧的阴道，如果看不到刚才那个标记，那就说明患者是是双子宫双阴道的。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id6"&gt;
+&lt;h1&gt;成双未必是好事&lt;/h1&gt;
+&lt;p&gt;上边提到的W女士还算是比较幸运的了，生殖器官的畸形并未给她的生活带来太多的痛苦，她仍可以正常性生活并且怀孕生子，但实际上很多阴道纵膈、合并子宫畸形的患者，生活质量会严重下降。除了影响性交，阻碍分娩外，精子还有可能因此进错洞。如果阴道纵隔偏向一侧，大姨妈更可能憋在里边出不来。好在患者发现病情以后及早治疗的话，大部分人的预后还是乐观的，但是也有一部分病情较为复杂的患者，可能还是会留下遗憾。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;作者自己的PS: 关于扩阴器，有个真人真事。年轻男医生X博士接到领导电话后费解地嘟囔说：今天要讲课吗？说让我拿个扩音器过去呢……五分钟后他红着脸回来说：她们是让我拿扩阴器……&lt;/p&gt;
+&lt;p&gt;PSS: 有时，我们畸形，但是我们还健康地活着。W女士有两个阴道，而我有两根肋骨是凹向心脏的，而我朋友的朋友，小鸡鸡上有两个口，他一直认为它们一个是用来尿尿的，另一个用来吐白。由于当时所处的立场，我没有对他进行深入访谈，没有邀请他本着科学求实的态度，撒一泡科学的尿，打一次科学的飞机，让我们看看他有多么的非凡。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;参考资料：&lt;/p&gt;
+&lt;ol class="arabic simple"&gt;
+&lt;li&gt;阴道畸形临床诊疗  中外健康文摘 2010年第10期 刘兰枝&lt;/li&gt;
+&lt;li&gt;系统解剖学 第七版   主编柏树令 人民卫生出版社&lt;/li&gt;
+&lt;li&gt;麦克明彩色人体解剖图谱  主编P H Abrahams  人民卫生出版社&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;题图来自:&lt;/p&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.rahvalorblog.com/how-to-lose-a-customer-gracefully.htm"&gt;How to lose a customer gracefully&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">Rae的任务是征服地球</dc:creator><guid>http://www.guokr.com/article/81341/</guid></item><item><title>为什么人们听到 押韵 的句子或者词汇会有“愉悦感”？
+</title><link>http://www.guokr.com/ask/item/20007/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;对中文而言，押韵和平仄都是研习古诗词的必修课。各语种诗歌的用韵形式不一而足，但作为一种全球群众喜闻乐见的内容表现形式，定有它内在的原因。&lt;/p&gt;
+&lt;p&gt;从语言认知上进行分析，押韵不只能提高人们对内容的专注，还会强化对内容的记忆。人类的记忆系统非常复杂，也产生了某些有趣的记忆特征：大脑的记忆容量虽然庞大，但在短时间内能够接受的内容量却非常有限。美国心理学家G.A.米勒在上世纪50年代的研究表明，人类的短时记忆基于一种“组块策略”，将独立的项目组合成较大、更有意义的单元进行记忆，这种组块的数量一般在7组上下浮动。比如字符串“C C E E E E G I I I I N N N R S S S T T ”由20个组块组成，难以迅速记忆，但转换成“SCIENCE IS INTERESTING”便成为了3个单词组成的一句整句，完成了20到3、3到1的组块整合，极大的提高了记忆效率。&lt;/p&gt;
+&lt;p&gt;反观我们的问题，押韵事实上也是一种高效的组块整合策略，通过前后句的押韵，使内容在声音上产生了关联，使记忆组块脱离文字本身进一步进行了简化，降低了信息的学习难度，人们也就更乐于接受。&lt;/p&gt;
+&lt;p&gt;对于押韵提高记忆效率的例子还不只是唐诗宋词，古代欧洲的吟游诗人们走的更远。他们在背诵上千行的长篇史诗时，靠的不是满脑学识，而是对韵律的巧妙利用。英语中要找到与某词押韵的另一个单词一般有10-20种的选择，但要明确表达某种意义的选择却少之又少。通过押韵这一限制因素，诗人们很容易就能“找回”那个正确的用词，进而几乎一字不差的背诵出全文。&lt;/p&gt;
+&lt;p&gt;除却认知心理学的因素，麻省理工近年的一项研究还发现，大脑中确实有着掌管“节奏”的脑区——前额上回在听到节奏时会比一般说话更为活跃。虽然节奏与押韵的定义不同，但在诗歌中，押韵却也是产生节奏的重要手段。当韵律发生时，我们的大脑或许已悄悄期盼着下个韵脚的出现。&lt;/p&gt;
+&lt;p&gt;（感谢 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/i/0031963555/"&gt;ChanIm&lt;/a&gt; 对本回答的贡献）&lt;/p&gt;
+&lt;p&gt;进阶阅读：&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;&lt;a target="_blank" class="reference external" href="http://www.musanim.com/miller1956/"&gt;G.A.米勒－《神奇的数字：7±2》&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/post/73502/"&gt;关于“韵律脑区”的果壳小组贴&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;参考文献：&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;沈亚丹. 诗歌押韵的发生及其音乐本质浅论&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/20007/</guid></item><item><title>心理学不是一群疯子在研究自己 
+</title><link>http://www.guokr.com/article/81167/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;和其他科学家不同，心理学家通常用人作为被试，而且这些人往往是他们最方便找到的大学二年级学生。心理学上通常称之为“大二学生现象”。那么心理学家对这些来自西方工业化民主社会、拥有高等学历、生活富足的美国大学生被试的过度依赖，是否影响了我们对于人类的认识？
+英属哥伦比亚大学科学史博士生埃里克•约翰逊（Eric Michael Johnson）在科学公共图书馆（the Public Library of Science ，PLoS）发表博文提醒心理学工作者注意被试的选取。&lt;/p&gt;
+&lt;div class="section" id="id1"&gt;
+&lt;h1&gt;一群疯子在研究一群疯子？&lt;/h1&gt;
+&lt;p&gt;¬假设你和100个精神病人共处一室……你最想做的一件事八成就是夺门而出。夺门而出之后，你发现一个装有单面镜的小隔间；你可以坐在里面观察那房间里的一切，而房间里的人却看不到你。于是你坐下来，通过单面镜观察房间里正在进行的那个诡异实验。你看到，在那群精神病人中，有一小部分人身着白大褂、夹着病历夹四处走动；其他大多数人则在接受一系列的心理学测试。&lt;/p&gt;
+&lt;p&gt;没过多久你就看出些门道。你发现，被试中有些人在看录像，同时戴着测量皮电反应（galvanic skin response，指某种刺激引起的反射性的皮肤电阻或电位的变化，被认为可以灵敏地反映心理情绪变化——译者注）的监控设备；有些人在填写调查问卷，就一系列社会难题发表意见；还有些人在接受功能性磁共振成像（fMRI）扫描，以测出大脑不同部位的血液流量……作为一个果壳心理控，你马上意识到这些都是心理学和脑科学领域的标准研究方法。而真正令你感到惊奇的是——这些研究精神病人的人，他们自己也是精神病人。&lt;/p&gt;
+&lt;p&gt;在实验结束之后，一名研究者——一个精神病人——根据调查问卷的结果发表结论：“被试毫不在意他人的感受；做了伤害他人的事，也毫无愧疚之情。”&lt;/p&gt;
+&lt;p&gt;另一名研究者看着大脑扫描数据，附议道：“这一点在fMRI结果中也得到了证明。fMRI结果显示，他们的旁边缘系统（paralimbic system）——特别是其中与情绪支配相关的区域——的血流量明显不足。”&lt;/p&gt;
+&lt;p&gt;第三个研究者（似乎也是这个诡异实验的领导者）说：“通过皮电反射数据也能得出相同结论。数据显示，在看到暴力或是其他令人不安的场景时，被试几乎完全没有情绪反应；即便是有，也很轻微。”&lt;/p&gt;
+&lt;p&gt;“这些结果显示，人类天生就不诚实、反社会和蔑视他人。”第三个研究者说，“演化将我们塑造为一群自私自利的骗子；我们只求将自己的利益最大化，为达到目的不惜牺牲他人。”其他研究者点头赞同，因为所有研究结果都明白无误地指向了这一结论。&lt;/p&gt;
+&lt;p&gt;然而，正坐在小隔间里的你知道，这一结论是荒谬的——因为这个研究存在着一个巨大漏洞：那些研究者们只研究了精神病人。或许他们的数据是正确的，但是从那些数据得出的结论只适用于“精神病人”这一特殊群体。而且，研究者本身也属于那一特殊群体。他们自己的世界观固然如是，其他人却不见得和他们相同。然而他们错误地认为世界上其他人也和他们一样。这种现象，在科学上被称为“证实偏见”（confirmation bias）——人们倾向于那些支持自己的成见或猜想的结论，即使它们缺乏证据或证据不足。“确认偏误”通常是在下意识里发生的。我们每个人都喜欢那些支持我们成见的结论，这一点几乎无人能够幸免。这就是为什么科学研究要求样本必须足够大、足够多样化，才能够使结果尽量趋近于客观事实。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h1&gt;普适结论不过来自美国大学生？&lt;/h1&gt;
+&lt;p&gt;虽然那个精神病人的实验很可能永远不会在现实世界里发生，但它以一种简单方式指出了一个重大问题，对心理学家们研究人类认知演化的方法提出质问：如果研究者不慎落入社会层面的确认偏误，他们得到的结论是否还适用？错误的研究结果既然能影响那个假想的精神病人研究，是否也同样能影响我们关于人类本质的其他假说？&lt;/p&gt;
+&lt;p&gt;针对这一问题，加拿大英属哥伦比亚大学的心理学家约瑟夫•亨利希（Joseph Henrich），斯蒂芬•海涅（Steven J. Heine）和阿兰•洛伦萨杨（Ara Norenzayan）去年在《行为与脑科学期刊》（Journal of Behavioral and Brain Sciences）上发表了一篇论文。他们在文章中揭示了这样一个事实：虽然很多心里学家声称其研究具有“普适性”，但实际上其中绝大多数都只是针对单一社会群体（可以类比于我例子中的那群精神病人）的研究。&lt;/p&gt;
+&lt;p&gt;亨利希等人从发表于顶尖心理学期刊的研究中抽取了数百个样本。他们发现，在这些样本中，有96%的被试来自西方工业化国家，有68%来自美国；在那些来自美国的被试中，有67%是心理学专业的本科生——也就是说，若随机拉出来一个美国大学生和一个来非西方国家的人，前者曾当过心理学研究实验被试的可能性比后者大4000倍。&lt;/p&gt;
+&lt;p&gt;亨利希和他的同事们发现，这个反复出现于心理学研究中的亚人群全部都属于WEIRD（Western, Educated, Industrialized, Rich, and Democratic，即来自西方工业化民主社会、拥有高等学历、生活富足的）人群。用这样一群美国大学生作为我们研究人类行为的模型实在是太缺乏代表性。因此，亨利希等人呼吁所有的行为学和认知科学研究者（特别是那些研究人类进化的科学家）对这一现象提高警惕。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h1&gt;“大二学生”和其他人有多不同？&lt;/h1&gt;
+&lt;p&gt;如果将来自非西方世界的人和美国人做比较，我们就会发现二者在许多看似与心理学毫不相关的领域里——比如视觉感知、公平性、合作意识、空间推理、道德论证、思考方式甚至是智商的遗传性，都存在极大差异。在所有这些方面，美国大学生不止是和其他人不同，而且是迥然相异。正如亨利希和其同事总结的那样：虽然“这一亚人群对于人类来说极其缺乏代表性”，但是，他们还是被大多数研究者当做研究人类本质的对象。&lt;/p&gt;
+&lt;p&gt;我们不妨举个“视觉感知”的例子，来看看美国大学生和世界上其他人群究竟有多么不同。请观察下图中a、b两条水平线段，你能说出这它们中哪一条更长吗？&lt;/p&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdmovNzQvaGovdmo3NGhq
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdmovNzQvaGovdmo3NGhq
+LnBuZw==
+ /&gt;
+&lt;p&gt;如果你认为b线段更长，那么，你和许多美国人（包括大学生和儿童）的看法是一样的。而正如你可能猜到的那样，这两条线段实际上是一样长的，这一错觉被称为“穆勒-莱尔错觉”（Müller-Lyer Illusion）。该现象以德国精神病学家弗朗茨•卡尔•穆勒-莱尔命名，他在1889年第一个发现了它。&lt;/p&gt;
+&lt;p&gt;那么这一错觉就具有可以推广到全人类的普适性吗？如果你将两幅图展示给很多非西方社会（特别是那些狩猎采集社会）的人看，他们很可能会说这两条线段的长度并无不同。心理学家马歇尔•西格尔（Marshall H. Segall）在1966年所做的一系列跨文化实验中进行了这样一个尝试：他尽量延长线段a，直到实验对象认为这两条线段长度相等为止。实验结果请见下图。&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZWYvaXAvNHcvZWZpcDR3
+LnBuZw==
+ alt="16个不同社会群体的穆勒-莱尔错觉强度对比图。（2010年亨利希等人重制）" /&gt;&lt;p class="document-figcaption"&gt;16个不同社会群体的穆勒-莱尔错觉强度对比图。（2010年亨利希等人重制）&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;上图的纵轴表示“主观对等点（PSE）”，是人们认为线段a和b相等的时候a达到的实际长度。这一变量可以用于衡量不同社会群体的穆勒-莱尔错觉强度。正如该图所示，美国人（图表标签为“Evanston（埃文斯顿）”——西格尔正是在那里，对伊利诺伊州西北大学的学生做了这个实验）的穆勒-莱尔错觉强度高居榜首——直到线段a比b长1/5的时候，他们才认为二者相等。继他们之后的是约翰内斯堡的南非白人。与之截然相反的是南非卡拉哈里沙漠的桑人（San foragers，或称“布希曼人（Bushmen）”或“巴塞尔瓦人（Basarwa）”。电影《上帝也疯狂》曾经描述过他们的生活——译者注），他们几乎完全不受穆勒-莱尔错觉的影响。而该跨文化研究所覆盖的其他大多数社群受到的穆勒-莱尔错觉的影响也非常轻微。&lt;/p&gt;
+&lt;p&gt;那么，为什么美国人如此容易受到穆勒-莱尔错觉的影响呢？这大概是环境所致。大多数美国人生长于一个充斥着大量由水平直线和直角组成的现代建筑的环境中。因此，美国儿童（可以推广为高度工业化国家的大多数儿童）的大脑逐渐适应了这一环境，凭此做光学校准。然而，桑人和其他小规模的狩猎采集社群并没有这样一个工业化环境，所以，他们的大脑也不会受这一错觉的影响。
+在心理学界所谓的“族属生物学推理”（folkbiological reasoning）中，也能找到类似的现象。认知科学家通过考察来自美国城市中心区（也是大多数大学的集中地）的儿童，发展出一个颇具影响力的发育理论。该理论称，儿童在7-10岁之间会发生认知变化。正如亨利希和他的同事们在论文中提到的那样：&lt;/p&gt;
+&lt;p&gt;“在7岁之前，都市儿童认识生物的方式是将生物类比于人类，或以人为原点进行推测。而在7-10岁之间，都市儿童的观念逐渐转向成人的观念，开始认识到人类是动物的一种。”&lt;/p&gt;
+&lt;p&gt;这个转变一直被认为是所有儿童共有的。但亨利希指出，这一推断实际上只适用于一部分儿童——那些生活在都市环境中的儿童。针对美国威斯康星州的美国本土印第安人社群和墨西哥州的尤加敦玛雅人社群的研究显示，这种出现于美国都市儿童的认知变化并不存在于上述两个社群的儿童中。原因其实显而易见：都市儿童的生活环境基本与“自然”绝缘；他们接触人类的机会远远多于接触动物（甚至包括宠物猫狗）。仅在这一点上，都市环境就和很多非西方社会的环境，以及我们远古祖先曾经生活过的环境迥然不同。&lt;/p&gt;
+&lt;p&gt;结果，在这种“非自然”环境下成长的WEIRD儿童就认为自然万物都是以人类为中心的，直到他们从老师或者电视那里听到了不同的说法（尽管我对“在童年时期广泛接触大自然的儿童在成年后会更加重视环境问题”这一观点表示怀疑）。亨利希据此指出，我们应该通过对那些来自欠发达地区的儿童的研究来解释人类的认知行为，因为这些儿童的心智发育才是“正常的”。但是因为做这方面研究的心理学家大多出身于城市（相对来说，能够进入高等学府，特别是顶尖大学深造的农村学生要少得多）（请见果壳网文章《 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/59397/"&gt;穷孩子有没有春天&lt;/a&gt; 》），确认偏误很难消除；心理学家们就好像是在研究自己，然后声称他们的研究成果普遍适用于全人类。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id5"&gt;
+&lt;h1&gt;是镜像还是另一群人？&lt;/h1&gt;
+&lt;p&gt;虽然我之前一直拿精神病人举例，但是当然，精神病人确实不同于一般大众——精神病和反社会人格障碍（Anti-Social Personality Disorder）都是可以被诊断出来的精神障碍；导致这些精神障碍的既有环境因素，也有遗传因素。然而，广泛存在于心理学研究中的确认偏误会歪曲事实，这种歪曲也会像精神障碍一样，传递到后续的研究中。&lt;/p&gt;
+&lt;p&gt;对于这些存在于心理学研究的跨文化移植中的经验性差异，研究者尤须提高警惕（对于演化心理学家来说更是如此，因为正是他们将研究结论推广到全人类的）。亨利希和他的同事们呼吁，研究者们不应该急于声称他们的结论具有全人类普适性，而应该首先进行跨文化的研究。研究者和科学文章作者应该对确认偏误小心谨慎，不要执迷于那些支持他们自己的主观看法、却缺乏跨文化证据支持的观念。否则，我们很可能会发现自己站在一个镜子屋里，看着站在四面八方的自己的镜像，以为他们是和自己举止相同的另一群人——这就太荒谬了。&lt;/p&gt;
+&lt;blockquote&gt;
+编辑的话：其实心理学家早就意识到了人与人之间认知的不同，《 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/2222/"&gt;你是个怪人，在另一群人眼里&lt;/a&gt; 》，很早就展开了跨文化的社会认知研究。倒是我们在日常生活中要避免以偏概全的 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/51149/"&gt;刻板印象&lt;/a&gt; ，看到一个金牛座的人很倔，就以为所有金牛座都是牛脾气。&lt;/blockquote&gt;
+&lt;p&gt;Reference:&lt;/p&gt;
+&lt;p&gt;Henrich, J., Heine, S., &amp;amp; Norenzayan, A. (2010). The weirdest people in the world? Behavioral and Brain Sciences, 33 (2-3), 61-83 DOI: 10.1017/S0140525X0999152X&lt;/p&gt;
+&lt;p&gt;本文翻译自：
+&lt;a target="_blank" class="reference external" href="http://blogs.plos.org/blog/2010/09/23/reflections-on-the-weird-evolution-of-human-psychology/"&gt;Reflections on the WEIRD Evolution of Human Psychology&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;相关果壳文章：
+&lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/78068/"&gt;心理学家，请公开你的数据&lt;/a&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/post/22287/"&gt;怎样加入心事鉴定组？&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">伏维阁主</dc:creator><guid>http://www.guokr.com/article/81167/</guid></item><item><title>双胞胎能制造完美犯罪吗？
+</title><link>http://www.guokr.com/article/81163/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;在电影《龙门飞甲》里，雨化田和风里刀，一个是阴险毒辣的西厂督主，一个天真单纯的江湖混混。两人容貌完全相同，虽并非孪生兄弟，但也上演了一出偷梁换柱的好戏。不过倘若当时有DNA鉴定技术的话，恐怕风里刀就凶多吉少了。但对于孪生兄弟来说，就连DNA这个王牌可能都拿他们没办法。&lt;/p&gt;
+&lt;div class="section" id="o"&gt;
+&lt;h1&gt;“O兄弟”的完美犯罪&lt;/h1&gt;
+&lt;p&gt;2009年2月25日清晨，三个戴着面具的男人洗劫了德国著名的奢侈品店卡迪威（Kaufhaus des Westens），抢走了价值650万欧元的名表和珠宝。警方随后在犯罪现场找到一只凶嫌遗留下的手套，就在大家以为这起重大抢劫案即将告破的时候，不可思议的事情发生了——手套上提取的DNA信息指向了两个人。&lt;/p&gt;
+&lt;p&gt;他们就是哈桑和阿巴斯（Hassan and Abbas O.），一对DNA几乎完全吻合的双胞胎兄弟。这下，德国警方可傻了眼，这对“O兄弟”的DNA如此相似，以至于现有的分析技术根本无法辨别出两人，到底是哪一个留下了那只手套，谁也无从知晓。&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdzUvdHgvcGQvdzV0eHBk
+LnBuZw==
+ alt="O兄弟偷窃的珠宝。图：masrstars.com" /&gt;&lt;p class="document-figcaption"&gt;O兄弟偷窃的珠宝。图：masrstars.com&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;德国法律规定，每一名嫌疑人都必须被单独证明有罪，否则他就是无辜的。如此一来，警方连羁押二人的权利也没有。哈桑和阿巴斯很快便被无罪释放了，尽管他们很有可能都参与了这起犯罪。而由于德国法律规定，被裁定无罪的嫌犯名字不得对外公布，所以这对“O兄弟”的真实身份也成了一个谜。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id1"&gt;
+&lt;h1&gt;盗猎兄弟福克斯&lt;/h1&gt;
+&lt;p&gt;不过双胞胎作案也并非万无一失，英国双胞胎阿尔伯特•埃比尼泽•福克斯（Albert Ebenezer Fox ）和埃比尼泽•阿尔伯特•福克斯（Ebenezer Albert Fox ）就是一对典型例子。&lt;/p&gt;
+&lt;p&gt;别的不说，光听听这名字，就知道这对兄弟关系纠结有多深了。身高1.63米的埃比尼泽•阿尔伯特本是个快活的小个子，顶着个亮亮的光头再蓄点灰白胡子。麻烦在于，他兄弟阿尔伯特•埃比尼泽跟他一模一样。据说，辨别这两人的困扰从二人一出生就开始了，他们的老爸先给哥哥绑了条蓝色的缎带，又给另一个绑了条红色的，结果后来不知怎的搞混了颜色，就再也分不清谁是谁了。&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYm8vZGQvMWsvYm9kZDFr
+LnBuZw==
+ alt="福克斯兄弟。图：Wikipedia" /&gt;&lt;p class="document-figcaption"&gt;福克斯兄弟。图：Wikipedia&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;不过，这倒正好称了他俩的心意。尽管家教良好，福克斯兄弟长大却都成了臭名昭著的偷猎者，在斯蒂夫尼奇 地区广泛盗猎。在多年的犯罪生涯中，他们从不一起行动。这样，哪个如果不幸撞见巡查的警卫队，另一个刚好提供不在场证明。&lt;/p&gt;
+&lt;p&gt;兄弟二人互打掩护撞骗多年，不过，即便真的狡猾如狐狸，也总有栽跟头的时候，他们的诡计最后被爱德华•亨利爵士识破。由于同卵双胞胎的表现型不同，所以亨利爵士得以采用指纹识别技术把两人区别开来，成功将狐狸兄弟收监入狱。&lt;/p&gt;
+&lt;p&gt;虽然都是同年同月同日生，却没有哪对双胞胎可以保证同年同月同日死。埃比尼泽•阿尔伯特死于1926年，而阿尔伯特•埃比尼泽整整比他晚了11年，没有了兄弟的配合，双胞胎逍遥法外的戏码再也无法上演。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="k"&gt;
+&lt;h1&gt;K家兄弟——双胞胎罪犯界的元老&lt;/h1&gt;
+&lt;p&gt;论资质，克雷（Kray）家的雷金纳德（Reginald Kray）和罗纳德（Ronald Kray）俩兄弟算得上是双胞胎罪犯界的泰山极拍档了。回溯到上世纪五六十年代，整个伦敦的东区都是这对双胞胎罩着的。两兄弟的业务范围非常广泛，从持械抢劫到暴力袭击，从收保护费到走私军火，再算上两宗谋杀，可谓无恶不作。&lt;/p&gt;
+&lt;p&gt;K家的这对双胞胎兄弟长相一样，个性相似，在每个人生的十字路口上都保持着步调一致。学生时代，二人都表现出惊人的暴力倾向，在学校里人人敬而远之。随后他们受其祖父的影响，又双双当上了业余拳击手——据他们自己说，在19岁正式成为职业赛手前，兄弟俩谁都没输过一场比赛。&lt;/p&gt;
+&lt;p&gt;与此同时，双胞胎对他们潜在的终生事业也没有丝毫怠慢——最终，堆积成山的犯罪记录断送了他们作为拳击手的锦绣前程，也使兄弟二人彻底明确了人生的方向，携手踏上了职业罪犯的不归路。他们买下了伦敦一家夜总会，如火如荼地做上了全职的恶人。&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbWQvNG8vdWcvbWQ0b3Vn
+LnBuZw==
+ alt="克雷兄弟。图：Wikipedia" /&gt;&lt;p class="document-figcaption"&gt;克雷兄弟。图：Wikipedia&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;不过，如果在1960年的街头随机捉一个路人甲，向他打听K家兄弟是何许人也，他最先蹦出嘴巴的字眼大概是“多金”、“迷人”和“社交名流”。两兄弟在闲暇之余，把夜总会也经营得风声水起，作为老板，他们结识了一大堆当时的名媛士绅和影星歌星，在伦敦的社交界广受欢迎。他们黑白两路通杀，还频繁出入于商界、政界跟各大娱乐场合中，留下了不少有派头的照片。难怪二人在自传中这样骄傲地总结他们的丰功伟绩：“60年代，这是属于我们的全盛时期¬¬——披头士和滚石统治着流行音乐、卡比纳比街（Carnaby Street）统治着时尚界，而我们兄弟统治着伦敦……我们叱咤风云、无人匹敌。”&lt;/p&gt;
+&lt;p&gt;然而，月盈则亏的老话绝对不是乱讲，60年代是K家双胞胎的巅峰，也是必然的转折。就像堕落进深渊的高森市唤起了蝙蝠侠，K家兄弟也招来了他们命里的克星——苏格兰场警局的谋杀重案组。在漫长艰苦的证据搜罗之后，警方终于在1968年将两兄弟捉拿归案。双胞胎最终被判处终生监禁，一段罪恶的黄金时代随之终结了。&lt;/p&gt;
+&lt;p&gt;根据瑞典学者的一项研究，双胞胎有相互模仿行为的倾向。尤其对于同卵双胞胎来说，相似的成长环境、教育程度和周围人的态度，都会让他们不自觉地形成一种根深蒂固的求同意识，正如上文提及的K家兄弟。他人就是自身的投射，对于双胞胎而言，可能尤其如此吧。&lt;/p&gt;
+&lt;blockquote&gt;
+虽说DNA鉴定可能无法将一对双胞胎区分开，但除DNA外，定罪手段还有很多。所以，正如福克斯兄弟被捕的经历一样，“双胞胎犯罪”并非无解。&lt;/blockquote&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h2&gt;了解更多：&lt;/h2&gt;
+&lt;table class="docutils footnote" frame="void" id="id3" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;[1]&lt;/td&gt;&lt;td&gt;&lt;a target="_blank" class="reference external" href="http://en.wikipedia.org/wiki/Albert_and_Ebenezer_Fox"&gt;Albert and Ebenezer Fox&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id4" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;[2]&lt;/td&gt;&lt;td&gt;&lt;a target="_blank" class="reference internal" href="#the-claim-identical-twins-have-identical-dna"&gt;The Claim: Identical Twins Have Identical DNA&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;span class="target" id="the-claim-identical-twins-have-identical-dna"&gt;&lt;/span&gt;&lt;table class="docutils footnote" frame="void" id="id5" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;[3]&lt;/td&gt;&lt;td&gt;&lt;a target="_blank" class="reference external" href="http://www.time.com/time/world/article/0,8599,1887111,00.html#ixzz1hADt97k2"&gt;Despite DNA Evidence, Twins Charged in Heist Go Free&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id6" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;[4]&lt;/td&gt;&lt;td&gt;&lt;a target="_blank" class="reference external" href="http://law.jrank.org/pages/784/Crime-Causation-Biological-Theories-Genetic-epidemiological-studies.html#ixzz1hAECEKsE`"&gt;Crime Causation: Biological Theories - Genetic Epidemiological Studies&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">南瓜大王</dc:creator><guid>http://www.guokr.com/article/81163/</guid></item><item><title>维生素D能防癌吗?
+</title><link>http://www.guokr.com/article/81160/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;一份新的报告分析了19个关于维生素D对骨折影响的研究论文，以及28个维生素D对癌症效果的研究。报告认为，与钙剂一起服用维他命D可能会减少你骨折的风险，至于是否能减少患癌症风险，目前还没有足够的证据。&lt;/p&gt;
+&lt;p&gt;根据此项研究，有服用维他命D和钙剂的人骨折的可能性比那些不服用的人低11%&lt;/p&gt;
+&lt;p&gt;美国塔夫茨医疗中心的研究者表示，服用维他命D的老年人骨折发生率的降低更显著，大约降低了30%。&lt;/p&gt;
+&lt;p&gt;至于维他命D在防癌中所扮演的角色，科学家表示“我们没有足够好的资料”。在先前的研究中，有些变量不易控制，譬如人们在饮食过程中摄入了多少的维他命D，以及人们的日照量。此项新的研究 &lt;a target="_blank" class="reference external" href="http://www.annals.org/content/155/12/827.abstract"&gt;报告&lt;/a&gt; 于12月19日发布在《内科学年鉴》（Annals of Internal Medicine）上。&lt;/p&gt;
+&lt;p&gt;根据美国国立卫生研究院（NIH）所称，尽管一些食物富含维生素D，但多数食物中都不含这种维生素。三文鱼和金枪鱼等鱼类，以及蛋黄都富含维生素D。而且，当我们在日晒中暴露于紫外线时，皮肤也能合成维生素D。&lt;/p&gt;
+&lt;p&gt;研究表明维生素D与骨骼的矿物质沉淀有关。但是它与癌症的关系并不十分明确。有些研究表明维生素D也许能促进导致癌症的细胞分裂和其他进程，从而；但也有其他研究结果与之相反。维生素的作用可能因在身体不同部位而不同，它能加速某些癌症，但是也能抑制其他的癌症进展。&lt;/p&gt;
+&lt;p&gt;这个报告认为，关于减少骨折发病率方面，维生素D只有结合钙一同摄入时才能减低此风险。根据此项研究，在每日摄入300国际单位（IU）至1100国际单位量的人身上能看到成效。&lt;/p&gt;
+&lt;p&gt;关于维生素D是否能预防癌症的调查结果中，先前的一些研究有所矛盾。报告分析的其中三组研究都是前瞻性随机对照实验，此类实验被认为是最可靠的科学论证。此类实验在研究一开始就将参与者分为两组，一组服用维生素D，另一组服用安慰剂。这些研究表明，高剂量（每日1000国际单位）的维生素D摄入可能会减少癌症发生率。&lt;/p&gt;
+&lt;p&gt;然而在这些研究中，参与者血液中的维生素D的水平没有被测定。没有了这些检测的数值，也就不能妄自定论。安慰组的有些人事实上有可能也摄入维生素D补充品，有可能摄入一部分复合维生素，而且实验组的参与人员在饮食中摄入维生素D的水平，以及他们的日晒情况可能都大相径庭。&lt;/p&gt;
+&lt;p&gt;这份报告所分析的另一些前瞻性观察性研究中，则确实测定了被试血液中的维生素D水平，并且跟踪调查了癌症病人的维生素D水平。这部分研究认为，高维生素D水平的人患结直肠癌风险较低，但是，这部分研究也表明，总体来说高维生素D水平的人患任意一种癌症中有更高的风险。因此，关于维生素D与癌症风险率之间的关系尚无法下一个综合性的结论。&lt;/p&gt;
+&lt;table class="docutils field-list" frame="void" rules="none"&gt;
+&lt;col class="field-name" /&gt;
+&lt;col class="field-body" /&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr class="field"&gt;&lt;th class="field-name"&gt;本文编译自:&lt;/th&gt;&lt;td class="field-body"&gt;《科学美国人》网站12月19日&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class="field"&gt;&lt;th class="field-name"&gt;原文:&lt;/th&gt;&lt;td class="field-body"&gt;&lt;a target="_blank" class="reference external" href="http://www.scientificamerican.com/article.cfm?id=vitamin-d-prevents-fractures"&gt;请看这里&lt;/a&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class="field"&gt;&lt;th class="field-name"&gt;编译者:&lt;/th&gt;&lt;td class="field-body"&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/i/0941220456/"&gt;宅大大王&lt;/a&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class="field"&gt;&lt;th class="field-name"&gt;图片:&lt;/th&gt;&lt;td class="field-body"&gt;ISTOCKPHOTO/SIMPLYTHEYU&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;（果壳环球科技观光团微博  &lt;a target="_blank" class="reference external" href="http://t.sina.com.cn/guokrdigest"&gt;http://t.sina.com.cn/guokrdigest&lt;/a&gt; ）&lt;/p&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">宅大大王</dc:creator><guid>http://www.guokr.com/article/81160/</guid></item><item><title>“大风车”有助农作物生长 ？
+</title><link>http://www.guokr.com/article/81159/</link><description>&lt;div class="document"&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva2kvODkvd2cva2k4OXdn
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva2kvODkvd2cva2k4OXdn
+LnBuZw==
+ /&gt;
+&lt;p&gt;美国的农作物种植带正好也是它的主要风带，这条地带是美国风能开发的理想区域，一项新的研究显示，两者的地域交叉可能对农作物有益。&lt;/p&gt;
+&lt;p&gt;在过去的十年里，风能产业蓬勃发展，我们经常能在农田附近看到风力涡轮机。因此农民和研究者就想知道，转动的叶片对玉米、大豆和其他农作物会有什么影响呢？在许多地方的传统农业里，农民总会在田地两旁种植一些树木，这样做可以减慢风速并使空气发生扰动，对农作物是有利的。于是研究人员就思考风力涡轮机对农作物是否有相似的影响呢？结果证明，它可能确实有助农作物生长。研究者在12月7日于旧金山举行的的美国地球物理联盟 (American Geophysical Union) 会议上发布了初步的研究结果。&lt;/p&gt;
+&lt;p&gt;风力涡轮机最显著的一个作用就是混合空气，从而给农作物带来更多的二氧化碳。它对农作物的其他一些影响就要复杂点了，比如，在引起周围空气流动的同时，风力涡轮机能够降低夜晚沉积在叶片上的露珠量，这有助于减小一些农作物病害，比如由真菌引起的疾病的风险。&lt;/p&gt;
+&lt;p&gt;对美国农作物大州爱荷华州来说，这种影响是再好不过的了。因为根据爱荷华州政府的一份报告显示，气候变化使得爱荷华州的空气更加潮湿，夜露的出现就也变得更为普遍。&lt;/p&gt;
+&lt;p&gt;另一个可能的有益影响是，由于风力涡轮机混合空气并降低了风速，所以它们还可以影响周围的温度，使夜晚更温暖，白天更凉爽。这些影响能够降低夜晚结霜的概率，减少酷暑的天数，都有助于农作物生长。&lt;/p&gt;
+&lt;p&gt;但温度的变化对农作物也是有负面影响的，夜间的温升会增加植物的呼吸作用，加速植物释放白天从空气中吸收的碳，从而导致植物的碳吸收量减少。由于存在这种不利影响，因此对涡轮机的相关研究就显得至关重要了。&lt;/p&gt;
+&lt;p&gt;2010年由美国伊利诺伊大学的气候学家罗伊（Somnath Baidya Roy）领导的一项研究显示，在南加利福利亚，涡轮机下风处的夜间温度确实会偏高。罗伊赞同涡轮机对农作物的影响很复杂的说法，但是他也认为，涡轮机能够保护农作物免于霜冻这一点可能要比其他影响更有意义。此外，由于涡轮机的影响很复杂，不同作物的需要也不同，涡轮机对某地作物有好处不等于风力涡轮机对其他地区的不同作物也有效果。&lt;/p&gt;
+&lt;table class="docutils field-list" frame="void" rules="none"&gt;
+&lt;col class="field-name" /&gt;
+&lt;col class="field-body" /&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr class="field"&gt;&lt;th class="field-name"&gt;本文编译自:&lt;/th&gt;&lt;td class="field-body"&gt;《国家地理》网站12月16日&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class="field"&gt;&lt;th class="field-name"&gt;原文:&lt;/th&gt;&lt;td class="field-body"&gt;&lt;a target="_blank" class="reference external" href="http://news.nationalgeographic.com/news/energy/2011/12/111219-wind-turbines-help-crops-on-farms/"&gt;请看这里&lt;/a&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class="field"&gt;&lt;th class="field-name"&gt;编译者:&lt;/th&gt;&lt;td class="field-body"&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/i/1677599761/"&gt;风之精灵王&lt;/a&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class="field"&gt;&lt;th class="field-name"&gt;图片:&lt;/th&gt;&lt;td class="field-body"&gt;Bertrand Rieger, Hemis/Corbis&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;（果壳环球科技观光团微博  &lt;a target="_blank" class="reference external" href="http://t.sina.com.cn/guokrdigest"&gt;http://t.sina.com.cn/guokrdigest&lt;/a&gt; ）&lt;/p&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">疯子精灵王</dc:creator><guid>http://www.guokr.com/article/81159/</guid></item><item><title>【圣诞特稿】如何送出让女友欢喜的护肤品（男士必看）
+</title><link>http://www.guokr.com/article/81158/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;圣诞将至，你给女朋友买好礼物了吗？如果还没买，你想到送什么才好了吗？送玩偶太幼稚，送金饰太贵重，送巧克力太没新意……那送护肤品怎么样？既是她所需要，又暗示了你的体贴，绝对是不错的选择！但是下一个问题：送什么样的护肤品才好呢？买一套她正在用的护肤品？有诚意没惊喜。看广告？万一不合适她的肤质反而弄巧成拙。&lt;/p&gt;
+&lt;p&gt;好吧，就让我来教一下各位不懂护肤的男性，怎么在保证惊喜的前提下，选定适合女友的护肤产品。&lt;/p&gt;
+&lt;div class="section" id="id1"&gt;
+&lt;h1&gt;送礼三步走方针&lt;/h1&gt;
+&lt;p&gt;第一，认识女友的皮肤类型，了解季节变化会让皮肤会发生哪些变化。&lt;/p&gt;
+&lt;p&gt;第二，参考护肤品全成分表，选择配方精良的产品。&lt;/p&gt;
+&lt;p&gt;第三，迂回打探女友喜欢的使用感受，选择最适合她的那一款。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h1&gt;时间紧任务重，保湿产品胜出&lt;/h1&gt;
+&lt;p&gt;虽说三步方针的第一步是要首先认识女友的皮肤类型，但实话说，弄清女友肤质对于多数男性来说是个不可能完成的任务。因为要有惊喜，就不能带女友去专业医生那里做肤质测试。而就算你想到个理由跟女友玩网络上的肤质小测试，也不一定测得准，因为不论是四类肤质（正常型、混合型、干燥型、和敏感型）&lt;a class="footnote-reference" href="#id18" id="id3"&gt;[1]&lt;/a&gt;，还是16种皮肤类型（根据油性和干性，敏感性和耐受性，色素性和非色素性，紧致和皱纹四对参数划分）&lt;a class="footnote-reference" href="#id19" id="id4"&gt;[2]&lt;/a&gt;，如果没有专业的训练很难对一些皮肤状况做出准确判断，而这些训练都不是短时间内可以速成的。（毕竟离圣诞节只有4天了！）&lt;/p&gt;
+&lt;p&gt;没法确定女友皮肤类型，但冬季给皮肤带来的影响却可以提供解决方案。冬季温度、湿度都会降低。温度降低1℃皮脂分泌会减少10%&lt;a class="footnote-reference" href="#id20" id="id5"&gt;[3]&lt;/a&gt;，这就是为什么有些人夏日皮肤偏油到了冬天会觉得干燥紧绷了。湿度对个人皮肤的感受也有很大的影响，湿度小于30%时，就会有皮肤干燥紧绷的不适感&lt;a class="footnote-reference" href="#id21" id="id6"&gt;[4]&lt;/a&gt;（房间里开空调的话湿度就更低了）。所以，送款合适的保湿护肤品绝对是又有诚意又安全的选择（之所以安全：送抗衰老的产品，女友可能会觉得你嫌她年老色衰；送美白产品，心思细密的女生会怪你嫌她不够白；送彩妆的话……绝大部分男生看到那些琳琅满目的彩妆柜台都想撞墙吧）。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id7"&gt;
+&lt;h1&gt;教你看懂成分表，选最适合产品&lt;/h1&gt;
+&lt;p&gt;目标锁定保湿产品，就要依据护肤品的全成分表来选择了。&lt;/p&gt;
+&lt;p&gt;要知道，皮肤的水分占全身水分的18%-20%，而角质层含水量占表皮的20%-35%&lt;a class="footnote-reference" href="#id22" id="id8"&gt;[5]&lt;/a&gt;。正常情况下，汗腺、皮脂腺分泌物形成的皮脂层能帮助角质层保持一定的含水量，但由于冬季皮肤自身分泌皮脂减少，这样一来就不能很好地保持角质层的含水量，而角质层含水量若低于10%就会导致各种皮肤问题。所以，选择保湿霜时可以选择那些含有皮脂类似成分的产品。（编辑注：本部分内容其实可以不用细看，但如果你记住了，在适当的时候说出来，能很好地暗示你对她有多用心。）&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id9"&gt;
+&lt;h1&gt;小抄来了：&lt;/h1&gt;
+&lt;p&gt;&lt;strong&gt;表1 表面双层脂质组分&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZ2Mvd3MvdHcvZ2N3c3R3
+LnBuZw==
+ alt="皮脂组成表[5]。生理性脂质（神经酰胺、胆固醇、脂肪酸）不但可以保湿还可以帮助皮肤的自我修护。" /&gt;&lt;p class="document-figcaption"&gt;皮脂组成表[5]。生理性脂质（神经酰胺、胆固醇、脂肪酸）不但可以保湿还可以帮助皮肤的自我修护。&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;表2 天然保湿因子组分&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="document-figure"&gt;&lt;img src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveDgvYnYvMGgveDhidjBo
+LnBuZw==
+ alt="皮肤中的天然保湿因子组分[5]。" /&gt;&lt;p class="document-figcaption"&gt;皮肤中的天然保湿因子组分[5]。&lt;/p&gt;&lt;/div&gt;
+&lt;p&gt;简单地说，甘油、乳酸、尿素、神经酰胺、吡咯酮酸钠、角鲨烷、胆固醇、脂肪酸这些成分都是可以考虑选择的。甘油的保湿浓度一般不标出，会在10%以内。乳酸在5% -10%，尿素在5%-10%。&lt;/p&gt;
+&lt;p&gt;选择了有益的成分，同时也要避免刺激性的成分。特别是皮肤干燥的状况下，更容易敏感。比如香料、酒精都会容易引起敏感，使皮肤干燥感加重。香料引起的敏感的几率最大&lt;a class="footnote-reference" href="#id23" id="id10"&gt;[6]&lt;/a&gt;，且对皮肤没有任何好处，只是取悦使用者的嗅觉。&lt;/p&gt;
+&lt;p&gt;护肤品中很多植物萃取其实就是香料的作用，一样会引起过敏。它们在成分表中有时统称香精，有时会叫：香茅醇、苧烯、香叶醇、丁香酚、金合欢醇、茴香醇、肉桂醛、柠檬醛等，其实都是香料。&lt;/p&gt;
+&lt;p&gt;当然，防腐剂也可能引起敏感，不过相对香料来说过敏的人较少，而且防腐剂对于护肤品的安全性、稳定性都至关重要，可以说是不可或缺的。（详见 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/51387/"&gt;Chanel面膜也含防腐剂？&lt;/a&gt; ）&lt;/p&gt;
+&lt;p&gt;选定了保湿产品，再具体到产品的质地选择——是质地轻薄些的啫哩，还是保湿与轻薄兼顾的乳液，亦或是厚重些的乳霜，就要靠各位留心观察自家女友偏爱的使用感受了。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id11"&gt;
+&lt;h1&gt;保湿产品得搭配去角质产品&lt;/h1&gt;
+&lt;p&gt;冬季除了皮肤油脂分泌减少，还有可能引起角质层堆积，让肤色看起来暗沉。这时候可以选择一些去除角质的产品。&lt;/p&gt;
+&lt;p&gt;相对于磨砂膏之类物理去除角质的方法，果酸、水杨酸去除角质更为有效，且在合适的浓度和pH值范围内它们是安全的。另外，水杨酸清除毛孔内堆积的老化角质后，让皮肤油脂更好地分泌到皮肤表面，对缓解痘痘问题也会有不错的效果。果酸对皮肤表层的老化角质去除效果比较好，还会有明显地提亮肤色美白的作用。&lt;/p&gt;
+&lt;p&gt;若觉得女友近来肤色不太好，建议你最好在送保湿品的同时再送一支合适的果酸产品，保湿美白又不露声色。可惜有些人对水杨酸、果酸会过敏，各位男朋友在送之前最好能迂回曲折地探听一下女友的过敏史。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id12"&gt;
+&lt;h1&gt;身为男友冬日也别忘了帮女友防晒&lt;/h1&gt;
+&lt;p&gt;虽然大家都觉得炎炎夏日主推防晒，寒冷冬季主推保湿，但其实冬季同样不能忽视防晒。因为冬季的紫外辐射依然可能引起红斑和其他相关疾病[8]，而且相对于UVB来说，引起光老化的UVA，从夏季到冬季变化比较小&lt;a class="footnote-reference" href="#id24" id="id13"&gt;[7]&lt;/a&gt;，四季都需要防护（详见 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/13406/"&gt;小麦色=健康？&lt;/a&gt; ）。因此，身为人家的男朋友，在圣诞节时，送她一瓶帖心的防晒是很有必要的。&lt;/p&gt;
+&lt;p&gt;至于怎么选择防晒产品，一是参考产品标签上的SPF值，一般通勤族，SPF15也就够了；二是看成分，个人比较推荐物理防晒（二氧化钛、氧化锌）的防晒产品，既不容易引起敏感，又可以做到UVA波段的防护。虽然物理防晒剂的产品，质地会稍微厚一些，不过冬天使用倒不用太过担心。（编辑注：更贴心的男友会看 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/57279/"&gt;防晒霜用量不足等于浪费&lt;/a&gt; ，然后细心告诉女友如何正确地使用防晒霜。）&lt;/p&gt;
+&lt;blockquote&gt;
+编辑的话：距离圣诞已经很近很近啦，看完这篇文章，还没准备圣诞礼物的你，赶快行动起来吧！千万不要因为没送礼物这样的小事，误了你们圣诞的甜蜜大事呀！&lt;/blockquote&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;本文题图来自呢图网。&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;另外，诚邀围观小组贴 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/post/81181/"&gt;【圣诞来了】姑娘们想要什么护肤品当礼物呢？&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id17"&gt;
+&lt;h1&gt;参考资料：&lt;/h1&gt;
+&lt;table class="docutils footnote" frame="void" id="id18" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id3"&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;莱斯利·鲍曼《皮肤分类解决方案》，P8&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id19" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id4"&gt;[2]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;Leslie Baumann MD, Understanding and Treating Various Skin Types: The Baumann Skin Type Indicator，Dermatologic Clinics[J], Volume 26, Issue 3, July 2008, Pages 359-373&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id20" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id5"&gt;[3]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;Sunwoo Y, Chou C, Takeshita J, Murakami M, Tochihara Y, Physiological and subjective responses to low relative humidity, J Physiol Anthropol [J]. 2006 Jan; 25(1):7-14.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id21" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id6"&gt;[4]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;W.J.CUNLIFFE, J. L. BURTON, SAM SHUSTER, THE EFFECT OF LOCAL TEMPERATURE VARIATIONS ON THE SEBUM EXCRETION RATE, British Journal of Dermatology[J],Volume 83, Issue 6, pages 650–654,December 1970.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id22" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id8"&gt;[5]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;虞瑞尧，保湿化妆品与皮肤科学，中国美容医学[J]，2002年8月第11卷第4期：393-395.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id23" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id10"&gt;[6]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;Anton C. de Groot, Contact allergy to cosmetics: causative ingredients, Contact Dermatitis[J],Volume 17, Issue 1, pages 26–34, July 1987.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id24" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id13"&gt;[7]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;M.Blumthaler, W. Ambach and W. Rehwald, Solar UV-A and UV-B radiation fluxes at two Alpine stations at different altitudes, THEORETICAL AND APPLIED CLIMATOLOGY[J], Volume 46, Number 1, 39-44.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id25" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;[8]&lt;/td&gt;&lt;td&gt;D.J.Turnbull, A. V. Parisi, J. Sabburg, Scattered UV Beneath Public Shade Structures During Winter, Photochemistry and Photobiology[J], Volume 78, Issue 2, pages 180–183, August 2003.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">helixsun </dc:creator><guid>http://www.guokr.com/article/81158/</guid></item><item><title>大地震为何会增快地球自转速度？
+</title><link>http://www.guokr.com/ask/item/12665/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;果壳自然控的这篇文章： &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/12770/"&gt;《【地震特辑】地球自转为何减少1.6微秒？》&lt;/a&gt; 能够回答这个问题。&lt;/p&gt;
+&lt;p&gt;文中关于地震导致地球自转改变的原因，是这样描述的：&lt;/p&gt;
+&lt;p&gt;“对于旋转的地球来说，其自转速度的快慢跟它的转动惯量有关。简单的来说，转动惯量就是质量乘以半径的平方。地壳运动（包括地震）会影响地球内部的物质分布。一般来说，正如水向低处流，物质倾向于向地心方向运动，这样地球的转动惯量就会减小，从而使地球的转动速度加快。”&lt;/p&gt;
+&lt;p&gt;这就好比我们看花样滑冰运动员在冰上的旋转——当运动员伸展双臂时，旋转速度就比较慢；当运动员收回双臂时，旋转速度会立刻提升。地震对地球自转的影响也是同样原理。只不过，这次地球只是略微收紧了一点点它的身体，产生的速度变化非常小，我们是感觉不到的，只有精密的科学仪器能够测出来。&lt;/p&gt;
+&lt;p&gt;文中又提到：&lt;/p&gt;
+&lt;p&gt;“即使没有发生地震，地球的自转速度也一直处于变化当中，只是幅度很小罢了。除了地壳运动，很多因素都会影响地球自转。比如海洋潮汐，海水的摩擦作用使地球自转每百年变慢约千分之一秒；又比如季节变化，冰雪尤其是冰川的增厚和消融调整水的分布，使得秋天的地球比春天的地球要快大约千分一秒（相比之下，1微秒不过是百万分之一秒而已）；此外大气运动（风暴等）、海洋洋流、地表河流、水汽侵蚀，甚至人类活动都会产生影响。因此地球实际是个每时每刻都在变化的不安分的调皮孩子。”&lt;/p&gt;
+&lt;p&gt;所以，这个1.6微妙的加快是不是永久并不重要，反正它很快就会淹没在别的因素导致的自转速度改变之中。而它给地球带来的影响，跟别的因素比起来，是那么的微不足道。&lt;/p&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/12665/</guid></item><item><title>为什么长期从事户外活动的人会显得比实际年龄大不少？
+</title><link>http://www.guokr.com/ask/item/12877/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;显老主要是由于皮肤老化。&lt;/p&gt;
+&lt;p&gt;皮肤老化是由内在外在诸多因素促成的复杂现象。除了年龄外，阳光中的紫外线也是导致皮肤衰老的最主要的因素。很多户外工作者、日光浴爱好者，都容易出现皮肤早熟性老化——皱纹、皮肤粗糙、缺乏弹性、色素脱失或者色素过度沉着形成色斑以及各种良性或恶性肿瘤等现象，这些问题的罪魁祸首就是日光中的紫外线，因此，它也被称为光老化（photoaging）。[1]&lt;/p&gt;
+&lt;p&gt;紫外线包括短波紫外线（UVC，200-280nm），中波紫外线（UVB，280-320nm）和长波紫外线（UVA，320-400nm），其中UVC在进入大气层时就被臭氧层隔离，只有UVA和UVB会辐射到地面，被皮肤所吸收。UVA穿透性强，能深入肌肤真皮层损伤胶原和弹力纤维，所以UVA不但引发肤色变黑，更会造成皮肤老化。UVB主要会引起皮肤泛红、发炎等，且长期的UVB照射有可能会诱发皮肤癌。[2]&lt;/p&gt;
+&lt;p&gt;紫外线，特别是UVA会造成皮肤的光老化。光诱导老化所造成的皮肤伤害不同于自然老化，而且会与自然老化叠加。[3]皮肤暴露在日光几个小时后，UVA会氧化皮肤中已存在的黑色素。皮肤会发红，肿胀并出现疼痛，极端的病例中会出现灼伤。24小时后，皮肤会产生保护性反应，大量合成黑色素，表皮层中出现组织病变，导致产生异常的“晒伤细胞”，这就是光老化的过程。[4]因此长期户外工作的人看上去显老。&lt;/p&gt;
+&lt;p&gt;黑色皮肤中的真黑色素可吸收90%的UVB，能提供比浅色皮肤中发现的褐色素更强的保护。因此，肤色越浅越要注意防晒。针对皮肤问题，世界卫生组织专门开展了INTERSUN计划，希望能提高公众对皮肤问题的关注度和知识水平、降低皮肤癌发病率。[5]&lt;/p&gt;
+&lt;p&gt;（附表）人类皮肤的光表型&lt;/p&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOXYvNGIvcXgvOXY0YnF4
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOXYvNGIvcXgvOXY0YnF4
+LnBuZw==
+ /&gt;
+&lt;p&gt;&lt;em&gt;此表由欧莱雅中国研发和创新中心根据世界卫生组织资料编制&lt;/em&gt; [6]&lt;/p&gt;
+&lt;p&gt;参考资料&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;[1] &lt;a target="_blank" class="reference external" href="http://www.who.int/mediacentre/factsheets/fs287/en/index.html"&gt;世界卫生组织：紫外线暴露&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[2] &lt;a target="_blank" class="reference external" href="http://www.who.int/uv/uv_and_health/en/"&gt;世界卫生组织：紫外辐射与健康&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[3] 《光皮肤病学》（中文翻译版）Henry W.Lim等,科学出版社&lt;/div&gt;
+&lt;div class="line"&gt;[4] 《美容皮肤医学新进展》（2009版）&lt;/div&gt;
+&lt;div class="line"&gt;[5] &lt;a target="_blank" class="reference external" href="http://www.who.int/uv/intersunprogramme/en/"&gt;世界卫生组织：INTERSUN计划&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[6] &lt;a target="_blank" class="reference external" href="http://science.lorealchina.com/Skin/Technology/TheSunBeCautious/Get%20exposed%20at%20your%20own%20risk.aspx"&gt;欧莱雅中国研发和创新中心：紫外线对肌肤的伤害&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/12877/</guid></item><item><title>困惑：防伪技术都应用到哪儿去了？
+</title><link>http://www.guokr.com/ask/item/18210/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;花费和正品一样的价钱，但是却买了假货，这种让人闹心的事属于“伪造商品”的两种常见情况之一。另一种情况则是我们常说的“山寨货”，即：购买者一般来说也清楚自己买的是假货。从技术上来说，防伪主要是针对第一种，也就是通过某种不影响正常使用又简单易操作的方式，让购买者能够主动对商品的真假进行识别。&lt;/p&gt;
+&lt;p&gt;这样的技术有很多，而且往往单件的成本会比较高。那些造假货的商家当然不愿意花钱使用这些技术，因为这会极大地压缩他们和正品相比的价格优势。但是那些生产正规商品的、具有相当规模的商家，他们却可以通过规模生产来压低成本。越是在某一行业内占据主导地位的品牌，比如像耐克、可口可乐、3M等，通常越有能力和动机在防伪技术上进行投入。以3M的车膜类产品为例。真品3M汽车隔热膜与仿冒者相比，除了本身所具有的特质（实际隔热效果的差别、摩擦后防掉色的能力等）外，还携带有很多防伪技术，包括：粘贴在产品之上的防伪标签；随产品提供的一个登陆账号，门店可以用此帐号登录3M电子质保卡网站，填写车辆和贴膜信息，并现场打印一份临时质保卡交给客户，一周后客户还将收到由3M中国总部直接寄发的正式质保卡以示确认。这样就形成了一套完整的防伪体系，有标识、有基于互联网和线下渠道的质保系统。仿冒的商家很难对每一个环节都进行模仿。&lt;/p&gt;
+&lt;p&gt;谈到具体的技术，我们见到过最多的相信是标签防伪。现在的防伪标签大多利用光学、材料学技术，比如在材料上留下很多微孔，光射进微孔发生衍射与散射，就会形成特定的图案，但是如果水渗入到孔里面，图案就会消失等等。标识防伪这方面，用到最多的目前还是全息防伪，它利用光的干涉和衍射原理，能够制成具有立体效果的图案。[1]&lt;/p&gt;
+&lt;p&gt;再有一种，则是结构与包装防伪，主要是防止真品的包装、容器被造假者反复利用。商家会在这些包装、容器的关键部位进行特殊标记（例如在瓶盖与瓶身的连接处进行激光烧印等），一旦产品被使用，这些关键部位即被破坏，也就不能用来重复使用。很多名酒都对自己的酒瓶和包装采用了这类防伪手段。[2]&lt;/p&gt;
+&lt;p&gt;还有一种技术，主要是在印刷中采用特殊的材料。它最广泛的用途是钞票的印制。人民币上使用了一种在不同方向上可以变色的油墨，称作OVI（Optically Variable Ink，光可变墨水或光干涉油墨）。这种油墨会因光线入射角的变化而反射不同波长的光，表现为从不同角度看，油墨颜色具有差别。瑞士锡克拜（SICPA）公司是这种油墨的主要生产者。[3]&lt;/p&gt;
+&lt;p&gt;目前采用比较多的还有基于计算机和互联网的防伪技术。特别是那些跨国企业，产品在多个国家行销，他们多会采用基于网络的数字信息核验防伪。也就是随产品提供一组防伪编码，通过电话或互联网确认其真假。可想而知，这串编码需要加入一部分的随机数，以防止被猜测。这种技术运用十分广泛，很多电子产品、日用品、食品都提供真伪查询服务。其实，我们为手机话费和网游所使用的充值卡也属于这一原理。为了防止造假者使用少量真的查询码掩护伪造的产品，大部分查询系统都设定为每一个号码只允许查询一次或两三次，或者在第二次及以后的查询中提示“已被查询过”。很多品牌还会在查询之后提供纸质的证明材料。比较有代表性的是制造业巨头3M公司建立的电子质保系统，如我们前文提到的，3M出产的汽车隔热膜产品均使用了这种防伪技术。用于防伪的电子技术还包括条形码、磁卡和IC卡等。现在在条形码的基础上又发展出了一种“矩阵码”，它是在一个大的正方形中排列的黑白方格，存储信息量可达到2000个字符。[4]&lt;/p&gt;
+&lt;p&gt;其他的防伪技术产品还有很多，比如生物特征防伪技术产品，一般只用于一些比较专业的领域。生物特征防伪中常见的是在产品（通常是药品等）中加入特别编码过的DNA。这些DNA不会影响药品的使用，但可以经过特别的设备所检测到并将编码阅读出来。这种技术需要比较高的生产成本和检测成本，并且需要专业设备才能操作。&lt;/p&gt;
+&lt;p&gt;参考资料&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;[1] &lt;a target="_blank" class="reference external" href="http://c315.cn/2237.htm"&gt;防伪标识&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[2] &lt;a target="_blank" class="reference external" href="http://c315.cn/2236.htm"&gt;结构和包装防伪技术&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[3] &lt;a target="_blank" class="reference external" href="http://en.wikipedia.org/wiki/Optically_Variable_Ink"&gt;维基百科：光干涉油墨&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[4] &lt;a target="_blank" class="reference external" href="http://c315.cn/2234.htm"&gt;数字信息防伪技术&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/18210/</guid></item><item><title>餐后睡意，跟大脑血供无关
+</title><link>http://www.guokr.com/article/81145/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;&lt;strong&gt;流言&lt;/strong&gt; ：《十万个为什么-为什么饭后想睡觉》：吃饭后为了有利消化，消化系统的血流量会增加，相对的，大脑的血流量就会减少，所以人就会觉得想睡觉&lt;a class="footnote-reference" href="#id14" id="id1"&gt;[1]&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;真相&lt;/strong&gt; ：饭后犯困是全世界人民都好奇的事呀。爱在节日吃火鸡的美国人，用“火鸡里含有更多的色氨酸”来解释这个现象：让我们昏昏欲睡的是火鸡，火鸡里的色氨酸会在体内合成有催眠作用的褪黑素。&lt;/p&gt;
+&lt;p&gt;但是，根据美国农业部的资料，火鸡中含有的色氨酸和其他常用肉类，如鸡肉、牛肉等相比，并没有明显差别&lt;a class="footnote-reference" href="#id16" id="id2"&gt;[2]&lt;/a&gt;。所以火鸡大餐后特别困倦，显然和色氨酸没有太大关系。&lt;/p&gt;
+&lt;p&gt;至于饭后大脑血供减少的说法更是靠不住。2004年的一篇综述中指出，这种说法跟众所周知的神经生理学准则相悖，即大脑作为全身最重要的器官，它的血液供应要优先保证，为了消化而减少大脑的血流量并不合理。另外，也没有任何证据表明饭后大脑的血流量减少了，甚至有研究发现饭后大脑的血流量反而增加了&lt;a class="footnote-reference" href="#id17" id="id3"&gt;[3]&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;事实上，正常的机体也确实有独特的机制让大脑的供血保持平稳，即便其他器官的血液分配有所改变，也不会对大脑的供血造成影响&lt;a class="footnote-reference" href="#id18" id="id4"&gt;[4]&lt;/a&gt;。譬如我们运动时虽然肌肉的供血大幅度增加，但大脑的血供仍然保持稳定。&lt;/p&gt;
+&lt;p&gt;虽然火鸡、血液集中于胃肠道都不是饭后犯困的原因，但饭后犯困现象确实存在，科学家们也想知道到底是什么原因造成了饭后犯困。&lt;/p&gt;
+&lt;div class="section" id="rich"&gt;
+&lt;h1&gt;吃得越rich，餐后睡意越浓&lt;/h1&gt;
+&lt;p&gt;圣马泰奥医学中心及斯坦福大学的研究人员发现，胆囊收缩素（Cholecystokinin，CCK；小肠分泌的一种肽类脑/肠激素，小肠和中枢神经系统都有丰富的含量，主要起激素和神经递质的作用）可能与餐后的睡意有关[5]_。&lt;/p&gt;
+&lt;p&gt;研究人员监测了受试者体内CCK的含量，发现在饭后2小时内有明显升高，2小时后开始回落。而通过斯坦福睡意量表（Stanford Sleepiness Scale，SSS）&lt;a class="footnote-reference" href="#id20" id="id5"&gt;[6]&lt;/a&gt;对受试者睡意的调查显示，睡意在饭后开始显著增加，之后趋于平缓。&lt;/p&gt;
+&lt;p&gt;研究人员对数据进行分析后认为，CCK的含量与餐后睡意两者之间存在正相关的关系。而且，进食高脂肪餐单受试者的CKK水平更高，餐后睡意也更强烈。其他有关CKK与餐后睡意的同类研究也得出相似的结论&lt;a class="footnote-reference" href="#id21" id="id6"&gt;[7]&lt;/a&gt;。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id7"&gt;
+&lt;h1&gt;血糖高——食欲素低——实验鼠困了&lt;/h1&gt;
+&lt;p&gt;另外，也有研究提示，餐后血糖升高，食欲素含量下降，可能是犯困的另一原因。&lt;/p&gt;
+&lt;p&gt;食欲素（Orexin），也叫下丘脑泌素（Hypocretin），是下丘脑分泌的一类激素，有食欲素-A和食欲素-B两种（或叫下丘脑泌素-1和下丘脑泌素-2）。食欲素的含量与人类的饥饿感及睡眠有着直接的关系。当食欲素含量低下，人就会觉得昏昏欲睡和不想运动。而食欲素含量高地时候，情况则会截然相反，人会变得清醒且活跃&lt;a class="footnote-reference" href="#id22" id="id8"&gt;[8]&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;有研究发现，当血糖浓度高时，会抑制食欲素的分泌，食欲素含量下降，实验鼠表现出困倦。而如果摄入更多的蛋白质，由此获得的氨基酸能刺激食欲素的分泌，让实验鼠保持清醒&lt;a class="footnote-reference" href="#id22" id="id9"&gt;[8]&lt;/a&gt;&lt;a class="footnote-reference" href="#id23" id="id10"&gt;[9]&lt;/a&gt;。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id11"&gt;
+&lt;h1&gt;餐后的睡意，进化上的小法则&lt;/h1&gt;
+&lt;p&gt;既然吃饱后会产生睡意，可能是身体希望我们在吃饱后就乖乖呆着别动，这样做有什么好处呢？&lt;/p&gt;
+&lt;p&gt;在生物学上，科学家并不确切地知道餐后睡意到底有多大的价值，为什么会在进化的过程中保留下来。演化心理学方面的研究提示我们，这个机制可能具有进化上的意义：进食后减少运动，有利于能量的贮存，之后动物再次开始寻找食物时就有更多可以利用的能量&lt;a class="footnote-reference" href="#id17" id="id12"&gt;[3]&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;现在，我们进食时通常都比较安静，而食物的刺激又会让副交感神经相对亢奋。兴奋的副交感神经除了会增强我们的消化功能、促进吸收营养物质及补充能量之外，还会让我们血压下降、心率减慢、体温降低、呼吸减慢，而这些表现都容易引导我们进入睡眠[&lt;a target="_blank" class="reference internal" href="#id24"&gt;10&lt;/a&gt;]。&lt;/p&gt;
+&lt;p&gt;但是对现代人，特别是某些营养过剩的人来说，这餐后睡意的意义并不大。&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;结论：谣言粉碎。&lt;/strong&gt; 睡意常在饭后报到，但跟血流分布和色氨酸都没有什么关系。到目前为止，科学界还没能就这一问题给出一个统一、确切的答案，这方面的研究也一直都在进行。不过，目前看来，激素与神经的调节导致餐后睡意的机率更高一些。&lt;/p&gt;
+&lt;blockquote&gt;
+我一直以为，这是一个贴近生活的小问题，用来给小朋友做科普再适合不过了，直到我的膝盖中了一箭。解答这个问题可并不简单。&lt;/blockquote&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;本文编辑：鱼在在藻。&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id13"&gt;
+&lt;h1&gt;参考资料：&lt;/h1&gt;
+&lt;table class="docutils footnote" frame="void" id="id14" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id1"&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&lt;a target="_blank" class="reference external" href="http://v.youku.com/v_show/id_XMjk1ODIwNDQ4.html"&gt;视频: 十万个为什么-为什么饭后想睡觉&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id16" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id2"&gt;[2]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&lt;a target="_blank" class="reference external" href="http://www.nal.usda.gov/fnic/foodcomp/search/"&gt;NUTRIENT DATA LABORATORY[EB/OL]. [2011-12-11].&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id17" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;[3]&lt;/td&gt;&lt;td&gt;&lt;em&gt;(&lt;a class="fn-backref" href="#id3"&gt;1&lt;/a&gt;, &lt;a class="fn-backref" href="#id12"&gt;2&lt;/a&gt;)&lt;/em&gt; Bazar K A, Yun A J, Lee P Y. Debunking a myth: neurohormonal and vagal modulation of sleep centers, not redistribution of blood flow, may account for postprandial somnolence[J]. Medical Hypotheses, 2004, 63(5): 778-782.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id18" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id4"&gt;[4]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&lt;a target="_blank" class="reference external" href="http://www.anaesthetist.com/physiol/basics/autoreg/Findex.htm#index.htm"&gt;The Worldwide Physiologist - Vascular Autoregulation[EB/OL]. [2011-12-11].&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id19" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;[5]&lt;/td&gt;&lt;td&gt;Wells A S, Read N ., Uvnas-Moberg K, et al. Influences of Fat and Carbohydrate on Postprandial Sleepiness, Mood, and Hormones[J]. Physiology &amp;amp; Behavior, 1997, 61(5): 679-686.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id20" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id5"&gt;[6]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&lt;a target="_blank" class="reference external" href="http://www.stanford.edu/~dement/sss.html"&gt;Stanford Sleepiness Scale[EB/OL]. [2011-12-13].&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id21" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id6"&gt;[7]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;Orr W C, Shadid G, Harnish M J, et al. Meal Composition and Its Effect on Postprandial Sleepiness[J]. Physiology &amp;amp; Behavior, 1997, 62(4): 709-712.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id22" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;[8]&lt;/td&gt;&lt;td&gt;&lt;em&gt;(&lt;a class="fn-backref" href="#id8"&gt;1&lt;/a&gt;, &lt;a class="fn-backref" href="#id9"&gt;2&lt;/a&gt;)&lt;/em&gt; Karnani M M, Apergis-Schoute J, Adamantidis A, et al. Activation of Central Orexin/Hypocretin Neurons by Dietary Amino Acids[J]. Neuron, 2011, 72(4): 616-629.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id23" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id10"&gt;[9]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&lt;a target="_blank" class="reference external" href="http://news.sciencenet.cn/htmlpaper/2011112110142059420625.shtm"&gt;科学网—研究称高蛋白食物能提神[EB/OL]. [2011-12-12].&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id24" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;[10]&lt;/td&gt;&lt;td&gt;朱大年 生理学学[M]. 第7版. 北京: 人民卫生出版社, 2011:317-321.&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">ZC</dc:creator><guid>http://www.guokr.com/article/81145/</guid></item><item><title>IBM：5年内实现脑控智能手机
+</title><link>http://www.guokr.com/article/81067/</link><description>&lt;div class="document"&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva24veG8vOTcva254bzk3
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva24veG8vOTcva254bzk3
+LnBuZw==
+ /&gt;
+&lt;p&gt;从2006年开始，IBM每年都要拟一份“5-in-5”的报告，提出近五年内可能实现的五项尖端科技（ &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/4270/"&gt;去年的报告&lt;/a&gt; )。每项预测乍听起来都有点疯狂，像是科幻小说里的情节，然而第一个五年已经终结的时候，IBM已经用科技成果证明了自身的前瞻性和行动力。比如，2006年，预测远程手术可能实现。2008年，预测语音语义的识别会成为主流交互手段之一。&lt;/p&gt;
+&lt;p&gt;最新发布的2011年度“5-in-5”报告书中，其中一项即为：2017年之前，不需动手不需动口，只需“起心动念”，我们便能如愿操纵智能手机。到那时，用户只需要戴一个类似于棒球帽的简单装备，就可以实现与手机等智能终端的心有灵犀。&lt;/p&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd20vc2svYm0vd21za2Jt
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uvd20vc2svYm0vd21za2Jt
+LnBuZw==
+ /&gt;
+&lt;p&gt;一个多月前，一项名为“Project Black Mirror”项目视频风靡网络，号称通过脑袋上贴几张“读脑贴片”就可以读取用户大脑中所想的人名，从而来控制iPhone的Siri，实现智能拨号。然而，随之就有专家明确指出视频中的破绽，揭穿这个“挂羊头卖狗肉”的视频纯属恶作剧。&lt;/p&gt;
+&lt;embed src="http://www.tudou.com/v/JjyPsGmjtKk/v.swf" type="application/x-shockwave-flash" allowscriptaccess="sameDomain" allowfullscreen="true" wmode="opaque" width="480" height="400"&gt;&lt;/embed&gt;&lt;p&gt;巧合的是，该视频中展现的人机交互方式，恰恰与IBM的预测如出一辙。那么，IBM何来如此坚定的信心，认为五年内恶作剧必将成为现实呢？&lt;/p&gt;
+&lt;p&gt;正如IBM发布的报告书中所言，早在2008年底，IBM公司与美国的Emotiv公司就已经联合研发并发布了世界第一套脑波控制游戏的系统——Emotive Epoc头带设备。这款设备可以通过非入侵式的脑电图仪（EEG）获得脑波信息，进而采用机器学习的方法分析出每个使用者大脑神经元电讯号的特定表达模式，将其与特定的简单行为或情感表达对应起来，再以计算机算法进一步解读，最后将其转化成电脑或智能终端所能理解的讯息，实现相应的操作。经过近几年的研发和改进，目前Epoc已可以通过大脑控制鼠标的操控，可以对特定受控物体实现“推”和“举”的操作，可以读取用户的“高兴”“难过”或者“平静”的情感表达。目前，Epoc的市场价格为299美元，已在游戏控制器的市场上占有一席之地。&lt;/p&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3kvc3MvNm0vY3lzczZt
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3kvc3MvNm0vY3lzczZt
+LnBuZw==
+ /&gt;
+&lt;p&gt;有了前期的研究基础，IBM公司中参与“Epoc”项目研发的科学家们断言，继体感控制和语音控制之后，脑波控制一定会在游戏和娱乐产业中大放异彩。同时，在临床医学方面，这项研究还将对大脑康复治疗和孤独症患者的研究与治疗过程中有极大帮助。更值得一提的是，IBM立志于在五年内，率先实现脑电波控制手机的拨号、发短信、发邮件等基本交互功能。&lt;/p&gt;
+&lt;p&gt;IBM如此不遗余力地要抢占脑波控制的市场先锋，或许也因为该产品与IBM公司长期以来的理念不谋而合——“Just Thinking”。&lt;/p&gt;
+&lt;p&gt;或许，IBM的预测并不仅仅提出一种发展前景，更重要的是凭借公司的声誉吸引了全球研发者的目光，引领了主流的研究方向，才可能促使各项预期得以实现。&lt;/p&gt;
+&lt;p&gt;今年的报告书中，除了“脑波控制”之外，还有那四项科技前景值得我们期待呢。&lt;/p&gt;
+&lt;div class="section" id="diy"&gt;
+&lt;h1&gt;1. 再生能源也可以DIY&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvN2sva2cvdDYvN2trZ3Q2
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvN2sva2cvdDYvN2trZ3Q2
+LnBuZw==
+ /&gt;
+&lt;p&gt;我们都知道，能量可以相互转化。所以，任何会动的东西都有制造能源的潜力。比如：跑鞋、自行车，甚至是水管里的流水，都有可能用来制造再生能源，以用于房子、办公室和城市的能源。&lt;/p&gt;
+&lt;p&gt;设想一下，只需要在电动自行车的轮辐上加一个小装备，就可以将车轮转动的动能转化为驱动车辆的电能。这样，就不需要再担心车辆充电的问题了，低碳环保地骑着电瓶车驰骋天下也可以成为现实。&lt;/p&gt;
+&lt;p&gt;IBM公司在爱尔兰就有这样一组研究人员，专注于将海洋中波浪运动产生的动能转化为电能，实现绿色供电。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h1&gt;2. 和难记的密码说再见&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcnEvNDMvbG8vcnE0M2xv
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcnEvNDMvbG8vcnE0M2xv
+LnBuZw==
+ /&gt;
+&lt;p&gt;密码这个东西越来越不讨人喜欢了。设置得太过复杂，以至于自己都会忘记。对此，IBM的科学家称，五年里，你的身体就是个人身份的证明。&lt;/p&gt;
+&lt;p&gt;我们都知道，人体中诸多特征都可以构成独一无二的生物数据，如面部识别、虹膜扫描和声音语调特征，只需要将这些特征组合起来，就可以打造出“非你莫属”的世上最安全密码。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h1&gt;3. 信息获取鸿沟不复存在&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMzMvamcvNWcvMzNqZzVn
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMzMvamcvNWcvMzNqZzVn
+LnBuZw==
+ /&gt;
+&lt;p&gt;信息化社会中，获得信息的层次和速度对财富增长有决定性作用。所以说，财富的垄断者也一定是信息的垄断者。但是未来五年里，随着智能移动终端设备的普及，这种信息获取的鸿沟将不复存在。&lt;/p&gt;
+&lt;p&gt;据预测，五年内智能手机的销售量将达到56亿台，这意味着全球70亿人口中的80%都可以通过移动终端及时获取信息。届时，在农田里劳作的农民，即使目不识丁，也可以通过手机和语音技术的帮助，得到最尖端的农业科技帮助，把握住最佳的播种时间，合理利用天气等因素，从而提高农业产量。同样的情况也将在移动商务和远程医疗等方面得以实现。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id4"&gt;
+&lt;h1&gt;4. “垃圾邮件”也能变废为宝&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZHQvYmcvNmIvZHRiZzZi
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZHQvYmcvNmIvZHRiZzZi
+LnBuZw==
+ /&gt;
+&lt;p&gt;我们经常都会被垃圾邮件所困扰。但如果偶尔翻翻垃圾邮件箱，也能找出眼前一亮的信息。IBM的研究团队抓住了这一现象，将在五年内推出为每位用户量身打造的“智能邮箱”，可以通过分析用户的使用习惯、往来的邮件和近期所关心的话题等信息，智能分析出该用户最近的工作、出行和理财等方面的计划与行为。如若到来的垃圾邮件中与有用户行为相关的信息，邮箱便能够自动提取信息，将其发送到用户的手机上，或是打造成日程表供用户参考。&lt;/p&gt;
+&lt;p&gt;想想看，当身在上海的你正在与芝加哥的客户商谈会晤安排时，手机上就收到了最新的航空公司打折信息，甚至标注了上海到芝加哥的推荐路线与价格比较，是不是很贴心呢？其实这些功能，都通过对邮箱中垃圾邮件进行有效的深度数据分析和数据挖掘均可得以实现。&lt;/p&gt;
+&lt;embed src="http://www.tudou.com/v/H_lxOMGmEzU/v.swf" type="application/x-shockwave-flash" allowscriptaccess="sameDomain" allowfullscreen="true" wmode="opaque" width="480" height="400"&gt;&lt;/embed&gt;&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;信息和图片来源： &lt;a target="_blank" class="reference external" href="http://www-03.ibm.com/press/us/en/presskit/36223.wss"&gt;IBM&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">唯一</dc:creator><guid>http://www.guokr.com/article/81067/</guid></item><item><title>如果喝完可乐立刻玩蹦极，会有很多二氧化碳从身体里飙出来吗？
+</title><link>http://www.guokr.com/ask/item/1184/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;这是一个非常有意思的问题。果壳问答团队认为，在缺乏实验结论以及直接相关的研究成果的前提下，想要回答这个问题非常困难。但我们可以通过一些基本线索来推导出这个问题可能的答案。&lt;/p&gt;
+&lt;p&gt;首先我们来看一下我们人类胃部的结构吧，见下图：&lt;/p&gt;
+&lt;p&gt;正常情况下，我们很开心地喝了一瓶可乐，幽门（胃的下方出口）会把它们暂时留在胃里，可乐中的二氧化碳在胃蠕动的帮助下逐渐释放，然后随着胃内气压增大，贲门（胃的上方出口）打开，二氧化碳喷涌而出，通过食道冲出口鼻，我们就……打了一个嗝。&lt;/p&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3QvbjUvdGkvY3RuNXRp
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvY3QvbjUvdGkvY3RuNXRp
+LnBuZw==
+ /&gt;
+&lt;p&gt;但是如果把一个人倒吊起来，事情就变得不那么简单了。我们得详细追究一下到底喝了多少可乐。&lt;/p&gt;
+&lt;div class="section" id="id1"&gt;
+&lt;h1&gt;喝得不多的情况下&lt;/h1&gt;
+&lt;p&gt;如果你喝的可乐不多，那还不太要紧。可乐中溶解了本身体积3-4倍的二氧化碳气体，这些气体在开瓶的时候已经跑掉一部分，喝到胃里又因为胃部的温暖而立刻又跑掉一部分。所以喝个一小杯再去蹦极的话，在强烈的振荡之下，胃中可乐释放出的气体不多。而由于倒立状态下打嗝比较困难，气体也不会出来，最多觉得胃有点胀罢了。等到蹦完爽完以后被拽上来，身体恢复正立，这时候多半会连打几个嗝，把气体放出来。&lt;/p&gt;
+&lt;p&gt;（果壳问答编辑在灌下半瓶可乐之后实际验证了“倒立状态下不太容易打嗝”的现象。这一现象的原理目前还没有科学的解释，但推测这可能是身体自我保护的一个机制，防止胃液返流回食道。其实“倒立可以治打嗝”是一个广泛流传的生活小经验，打嗝不止的同学可以试试。）&lt;/p&gt;
+&lt;p&gt;退一步讲，可乐不多的情况下，即使打嗝也不太要紧。从图中可以看出，胃的上方有一个突起的胃底，倒立状态下可以存放一些液体和食物，不会堵塞贲门口而造成下文所述的严重情况……&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h1&gt;喝得太多的情况下&lt;/h1&gt;
+&lt;p&gt;如果你真的喝了大量可乐，产生的气体胀得胃受不了了，贲门也有可能被打开。但这时候，你正被倒吊起来，贲门是朝下的，而且正在被大量的可乐和胃里的食物（如果真有人吃饱饭才来蹦极的话）淹没着。当贲门打开时，首先出来的不是气体，而是返流回食道的可乐，以及胃液与食物残渣的混合物。这个时候你可不是在打嗝，而是在呕吐，而且是大头朝下、从空中向四面八方喷射式呕吐……&lt;/p&gt;
+&lt;p&gt;那么，会不会有呛到气管的危险呢？一般来说是不会的。当我们打嗝或呕吐时，气管的入口会被关闭 &lt;a class="footnote-reference" href="#id5" id="id3"&gt;[1]&lt;/a&gt; ，这可以阻止返流的食物和液体进入气管。但是这个防护机制的可靠性并不是百分之百。呕吐物进入气管的噎食事件在全世界时有发生，但医生们显然缺乏处理蹦极状态下案例的经验。&lt;/p&gt;
+&lt;p&gt;那么，气体会不会从下面出来呢？一般来说连接肠道的幽门括约肌比贲门更难以打开，气体不太容易进入肠道。就算进入了一部分气体，也要通过一段长长的路程才能找到出口。所以通常来说，你是不会因为喝了可乐而在蹦极时放屁的。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id4"&gt;
+&lt;h1&gt;结论&lt;/h1&gt;
+&lt;p&gt;所以，我们不推荐喝完可乐再去蹦极。为了您的安全，蹦极之前请选择果汁等非碳酸饮料。&lt;/p&gt;
+&lt;table class="docutils footnote" frame="void" id="id5" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id3"&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;R.Shaker et al. (1992) Mechanisms of airway protection and upper esophageal sphincter opening during belching. Am J Physiol Gastrointest Liver&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/1184/</guid></item><item><title>佛教高僧死后的舍利子是怎么回事？有科学解释么？
+</title><link>http://www.guokr.com/ask/item/1205/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;“舍利”一词源自梵语，其实它的涵义不仅是指佛教高僧的火化遗骨[1]，但在中文里，没有特别说明的情况下，“舍利”指的是火化后产生的珍珠样或水晶样的珠形物质[2,3]。按照佛教典籍，“舍利”有骨舍利、发舍利和肉舍利之分，但通常情况下更多被理解为是骨质的结晶物[3]。&lt;/p&gt;
+&lt;p&gt;“舍利”的成因，由于缺乏严格的科学研究，目前在科学上还没有确定结论，大多解释只是根据现有科学原理来推测。&lt;/p&gt;
+&lt;p&gt;根据台湾一家佛教网站提供的信息：1998年他们与台湾“中科院”合作分析了一位高僧的“舍利”，发现主要为人骨的成分[4]（但未查到这项研究的相关科研文献）。而别的科学研究也侧面证明了：人骨骼在烧灼时有可能会出现各种形状的重结晶现象[5]。人体有很多细小的骨骼（例如指骨、趾骨或者耳道内的一些微小骨骼），少量骨骼经过燃烧后因重结晶而产生上述外观的“舍利”，这种可能性是存在的。&lt;/p&gt;
+&lt;p&gt;事实上，利用骨灰和别的添加材料进行高温处理而产生“人造舍利”或“仿舍利”，这项技术已经实现，在辽宁、江苏以及台湾等地都有人申请了这项技术的专利[6,7,8]，并且已经开始进行商业推广[9]。&lt;/p&gt;
+&lt;p&gt;也有人将“舍利”解释为结石，这种说法也仅是推测，没有得到证实。人体的结石中，胆结石的主要成分是大分子有机物（胆固醇、胆红素）和少量碳酸钙[10]；肾结石和膀胱结石的主要成分是钙盐（草酸钙、磷酸钙）和别的矿物盐、尿酸等[11,12]。其中，后者与骨骼的无机成分（含钙和磷酸根的无机盐[13]）有相似之处。但能否通过烧灼结石产生“舍利”尚不清楚。&lt;/p&gt;
+&lt;p&gt;除了骨骼和结石这两种解释，其它还有一些关于“舍利”成因的推测，包括：牙齿；死者携带的随葬品；或人为放入骨灰中的东西[3]。牙齿的成分也包括很多无机盐，其中牙骨质部分与骨骼成分相似[14]，因此也有人推测牙齿是“舍利”的来源。&lt;/p&gt;
+&lt;p&gt;对以上这些观点持反对意见的人称：如果“舍利”仅是一种化学现象，为何并不普遍存在，只是存在于少数高僧、长期修行的人士的遗骨中？&lt;/p&gt;
+&lt;p&gt;对此也有一种观点指出：一般人在火化过世的亲属时，不会特意也没有机会去寻找骨灰中是否有类似“舍利”的物质。通常只有佛教高僧和修行人士等与佛教关系密切的人士过世之后，人们才会主动去寻找看看是否有“舍利”留下来[2]。“舍利”本身就是一种罕见的现象，不去仔细寻找也很容易被忽视。因此，偶然出现的“舍利”更多被发现于少数佛教高僧的遗骨中，也并不奇怪。&lt;/p&gt;
+&lt;p&gt;此外还应该注意到，我们大部分时候看到的关于“舍利”的报道，所描述的“舍利”外观并不统一[15]。像“释迦摩尼佛舍利”那样的珍珠、水晶状的珠形“舍利”并不常被报道。这其中，一些报道所提供的“舍利”图片，更接近于“骨质重结晶”现象[16]。更有很多外观十分漂亮的“舍利”被证明是假冒的人工制品[17]。&lt;/p&gt;
+&lt;p&gt;根据以上科学原理和实际情况，果壳网编辑认为：抛开“舍利”在宗教界的价值和意义不言，仅从科学的观点来看，它仍然是一种可以被研究和解释的自然现象。而“舍利”真正的成因与组成成分，则需要对来源可靠的样品进行严格的科学分析才能得出。当然，科学研究无意于侵扰宗教的世界观和哲学体系。真正的“舍利”，无论其化学本质是什么，它作为一种重要的宗教遗产，其价值与意义都不会受到影响。&lt;/p&gt;
+&lt;p&gt;参考资料：&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;[1] &lt;a target="_blank" class="reference external" href="http://fodian.goodweb.cn/dict_2.asp"&gt;http://fodian.goodweb.cn/dict_2.asp&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[2] &lt;a target="_blank" class="reference external" href="http://en.wikipedia.org/wiki/%C5%9Aar%C4%ABra"&gt;http://en.wikipedia.org/wiki/%C5%9Aar%C4%ABra&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[3] &lt;a target="_blank" class="reference external" href="http://baike.baidu.com/view/6875.htm"&gt;http://baike.baidu.com/view/6875.htm&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[4] &lt;a target="_blank" class="reference external" href="http://www.forshang.org/000forshangintro/forshangintroc.htm"&gt;http://www.forshang.org/000forshangintro/forshangintroc.htm&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[5] Holden JL, Phakey PP, Clement JG. Scanning electron microscope observations of heat-treated human bone. Forensic Sci Int. 1995 Jun 30;74(1-2):29-45.&lt;/div&gt;
+&lt;div class="line"&gt;[6] &lt;a target="_blank" class="reference external" href="http://zhuanli.baidu.com/pages/sipo/20091001/8/280f24c1adeb8f7b652ca4d595fb0a7c_0.html"&gt;http://zhuanli.baidu.com/pages/sipo/20091001/8/280f24c1adeb8f7b652ca4d595fb0a7c_0.html&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[7] &lt;a target="_blank" class="reference external" href="http://zhuanli.baidu.com/pages/sipo/20081004/98/6c2ff31e898abefe0a56b78bef24bd94_0.html"&gt;http://zhuanli.baidu.com/pages/sipo/20081004/98/6c2ff31e898abefe0a56b78bef24bd94_0.html&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[8] &lt;a target="_blank" class="reference external" href="http://zhuanli.baidu.com/pages/sipo/113/61/be8ae1e95f85977acdd682cd432cf934_0.html"&gt;http://zhuanli.baidu.com/pages/sipo/113/61/be8ae1e95f85977acdd682cd432cf934_0.html&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[9] &lt;a target="_blank" class="reference external" href="http://www.bzypw.com/company/detail.aspx?id=44225"&gt;http://www.bzypw.com/company/detail.aspx?id=44225&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[10] &lt;a target="_blank" class="reference external" href="http://en.wikipedia.org/wiki/Gallstone"&gt;http://en.wikipedia.org/wiki/Gallstone&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[11] &lt;a target="_blank" class="reference external" href="http://en.wikipedia.org/wiki/Kidney_stone"&gt;http://en.wikipedia.org/wiki/Kidney_stone&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[12] &lt;a target="_blank" class="reference external" href="http://en.wikipedia.org/wiki/Urolithiasis"&gt;http://en.wikipedia.org/wiki/Urolithiasis&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[13] &lt;a target="_blank" class="reference external" href="http://en.wikipedia.org/wiki/Bone"&gt;http://en.wikipedia.org/wiki/Bone&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[14] &lt;a target="_blank" class="reference external" href="http://en.wikipedia.org/wiki/Tooth_(human"&gt;http://en.wikipedia.org/wiki/Tooth_(human&lt;/a&gt;)&lt;/div&gt;
+&lt;div class="line"&gt;[15] &lt;a target="_blank" class="reference external" href="http://blog.10jqka.com.cn/account/7095/42097095/posts/1731714.shtml"&gt;http://blog.10jqka.com.cn/account/7095/42097095/posts/1731714.shtml&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[16] &lt;a target="_blank" class="reference external" href="http://bbs.795.com.cn/7621425284-01-38.html"&gt;http://bbs.795.com.cn/7621425284-01-38.html&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[17] &lt;a target="_blank" class="reference external" href="http://news.163.com/10/1202/14/6MTFVSJV00014JB6.html"&gt;http://news.163.com/10/1202/14/6MTFVSJV00014JB6.html&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;（题图：相传为释迦摩尼佛舍利，来源：http://www.maitreyaproject.com/en/press/index.html）&lt;/p&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/1205/</guid></item><item><title>为什么食腐动物不会因为饮食感染得病…
+</title><link>http://www.guokr.com/ask/item/1301/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;首先要说明的是，“食腐动物”是一个范围很广的名称，指的是以腐烂的动植物遗体为食的动物，包括蚯蚓、蜗牛、白蚁和很多微生物等都是食腐动物。大型的食腐动物主要有秃鹫、鬣狗，还有一些（如乌鸦等）偶尔吃腐肉。&lt;/p&gt;
+&lt;p&gt;而疾病和病菌是有物种特异性的。能够杀死一种动物的病原不一定就能杀死另一种动物。所以并不能对全体“食腐动物”来讨论防止得病的机制。在这里，我们比较关心的是那些大型动物。&lt;/p&gt;
+&lt;p&gt;腐肉之所以有害，是因为肉在微生物的作用下腐败变质，会产生多种有毒有害的物质，其中最重要有害物质是细菌产生的毒素。腐肉中对人和动物危害最大的是肉毒杆菌，它们在厌氧条件下形成的肉毒素是人类已知毒性最大的物质之一。&lt;/p&gt;
+&lt;p&gt;大型食腐动物具有较强的胃酸，这是它们可以抵御腐肉中微生物的原因之一。食肉动物的胃酸强度普遍高于人类 &lt;a class="footnote-reference" href="#id3" id="id1"&gt;[1]&lt;/a&gt; ，对微生物有一定的防护作用。高度的酸性环境可以阻止肉毒杆菌的孢子发育产生肉毒素。&lt;/p&gt;
+&lt;p&gt;另一种让食腐动物免于得病的原因是抗体。红头美洲鹫（Cathartes aura，一种美洲秃鹫，典型食腐鸟类）、短嘴鸦（Corvus brachyrhynchos，又称美洲鸦，食腐肉）和郊狼（Canis latrans，一种美洲大型犬科动物，食腐肉）的血清含有大量肉毒素的抗体 &lt;a class="footnote-reference" href="#id4" id="id2"&gt;[2]&lt;/a&gt; ，这些抗体可以结合肉毒素并将其安全排出体外。这些抗体中的很多种是人和草食动物中所没有的。&lt;/p&gt;
+&lt;p&gt;此外，腐食动物还有很多特性可抑制细菌在肠道内滋生，例如消化液中含有更多的溶菌酶，食物通过它们消化道时间短等等。&lt;/p&gt;
+&lt;hr class="docutils" /&gt;
+&lt;dl class="docutils"&gt;
+&lt;dt&gt;感谢网友 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/i/0550389063/"&gt;Greenan&lt;/a&gt; 对答案的协助。&lt;/dt&gt;
+&lt;dd&gt;&lt;/dd&gt;
+&lt;/dl&gt;
+&lt;table class="docutils footnote" frame="void" id="id3" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id1"&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;DUKE, G. E. et al Gastric digestion in some raptors. (1975) Comp. Biochem. Physiol. A Physiol. 50(4): 649-656&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id4" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id2"&gt;[2]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;OHISHI, I. et al Antibodies to Clostridium botulinum Toxins in free-living Birds and Mammals. (1979) J. Wildl. Dis. 15: 3-9&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/1301/</guid></item><item><title>音乐圣诞树
+</title><link>http://www.guokr.com/article/80945/</link><description>&lt;div class="document"&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva20vYTEvNG0va21hMTRt
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva20vYTEvNG0va21hMTRt
+LnBuZw==
+ /&gt;
+&lt;table class="docutils field-list" frame="void" rules="none"&gt;
+&lt;col class="field-name" /&gt;
+&lt;col class="field-body" /&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr class="field"&gt;&lt;th class="field-name"&gt;DIYer:&lt;/th&gt;&lt;td class="field-body"&gt;叶子疏&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class="field"&gt;&lt;th class="field-name"&gt;制作时间:&lt;/th&gt;&lt;td class="field-body"&gt;2天&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class="field"&gt;&lt;th class="field-name"&gt;制作难度:&lt;/th&gt;&lt;td class="field-body"&gt;★★☆☆☆&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class="field"&gt;&lt;th class="field-name"&gt;GEEK指数:&lt;/th&gt;&lt;td class="field-body"&gt;★★★☆☆&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="contents topic" id="id1"&gt;
+&lt;p class="topic-title first"&gt;双向电梯&lt;/p&gt;
+&lt;ul class="auto-toc simple"&gt;
+&lt;li&gt;&lt;a target="_blank" class="reference internal" href="#id2" id="id8"&gt;1&amp;nbsp;&amp;nbsp;&amp;nbsp;材料和工具&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a target="_blank" class="reference internal" href="#id3" id="id9"&gt;2&amp;nbsp;&amp;nbsp;&amp;nbsp;项目规划&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a target="_blank" class="reference internal" href="#id4" id="id10"&gt;3&amp;nbsp;&amp;nbsp;&amp;nbsp;制作彩灯串&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a target="_blank" class="reference internal" href="#id5" id="id11"&gt;4&amp;nbsp;&amp;nbsp;&amp;nbsp;改装圣诞树&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a target="_blank" class="reference internal" href="#id6" id="id12"&gt;5&amp;nbsp;&amp;nbsp;&amp;nbsp;安装基座&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a target="_blank" class="reference internal" href="#id7" id="id13"&gt;6&amp;nbsp;&amp;nbsp;&amp;nbsp;大功告成&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a target="_blank" class="reference internal" href="#diyer" id="id14"&gt;7&amp;nbsp;&amp;nbsp;&amp;nbsp;DIYer签到处&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;淘宝上闲逛的时候我发现了一家出售音乐盒的小店，意外地发现里面有各种各样的机械八音盒。它们勾起了童年的回忆，我从那时起就一直想着能否用八音盒做些什么。很长一段时间以来我没有想到好主意，直到某天在711便利店里发现了一棵迷你的圣诞树。如果在圣诞树中装上发出悠扬乐声的复古八音盒，并在圣诞来临之前摆上桌面，想来是个值得一试的项目。&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h1&gt;&lt;a class="toc-backref" href="#id8"&gt;1&amp;nbsp;&amp;nbsp;&amp;nbsp;材料和工具&lt;/a&gt;&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZ3gvcW4vdnovZ3hxbnZ6
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvZ3gvcW4vdnovZ3hxbnZ6
+LnBuZw==
+ /&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;○ 3mm 七彩自动闪烁LED 10个（快闪）&lt;/div&gt;
+&lt;div class="line"&gt;○ 3mm七彩自动闪烁LED 10个（慢闪）&lt;/div&gt;
+&lt;div class="line"&gt;○ 25cm高的迷你桌上圣诞树 1个。有条件的话，天然的洋松枝条更好。&lt;/div&gt;
+&lt;div class="line"&gt;○ 发条八音盒 1个，一般来说会有十几首曲目候选，不满意的话可以在淘宝上多找找。八音盒到手以后要先试验下音质，因为这次购买的有些就有奇怪的金属磨擦声：-（&lt;/div&gt;
+&lt;/div&gt;
+&lt;blockquote&gt;
+所有零件都能从淘宝购买到。&lt;/blockquote&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva3gvMWIvbmEva3gxYm5h
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva3gvMWIvbmEva3gxYm5h
+LnBuZw==
+ /&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;○ 单芯绝缘细铜线（这种线方便在中部剥皮）大约3m&lt;/div&gt;
+&lt;div class="line"&gt;○ 5.6k电阻 20个&lt;/div&gt;
+&lt;div class="line"&gt;○ 9V方形电池 1个&lt;/div&gt;
+&lt;div class="line"&gt;○ 自锁按钮开关一个&lt;/div&gt;
+&lt;div class="line"&gt;● 电烙铁和焊接耗材；&lt;/div&gt;
+&lt;div class="line"&gt;● 剥线钳，剪刀，美工刀，胶带，etc；&lt;/div&gt;
+&lt;div class="line"&gt;● 环氧胶/强力胶&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h1&gt;&lt;a class="toc-backref" href="#id9"&gt;2&amp;nbsp;&amp;nbsp;&amp;nbsp;项目规划&lt;/a&gt;&lt;/h1&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;在开始做东西之前，首先要明确自己希望达到的目标。对于这次的制作，我的目标如下：&lt;/div&gt;
+&lt;div class="line"&gt;美观的迷你圣诞树，可以摆放在书桌上；&lt;/div&gt;
+&lt;div class="line"&gt;能够自动奏乐；&lt;/div&gt;
+&lt;div class="line"&gt;为了在夜晚也能有比较好的观赏效果，在树上装上各种颜色的彩灯。&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;根据以上的目标开始规划制作的各个部分。&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;很显然，对我来说音乐部分的选择已经限定为机械八音盒，为了使用方便选用发条式（用手摇机芯的话，毕竟抓住圣诞树不停摇摇把不太合适），剩下的就只有外形和曲目的细节问题。&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;外观上的尺寸要求意味着不能购买全尺寸的圣诞树，由于附近的生态环境和有关法律法规原因自行砍伐枝条也不现实，所以有必要在淘宝上寻找一棵迷你圣诞树作为制作的基础。&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;最后是彩灯的设计。最简单的方法是直接购买各种颜色的发光二极管，但是我的目标要比简单的彩灯高一些：希望它们能够随机不重复地闪烁（有人想起零编程LED矩阵了么？）。所以最后的选择是购买一批不同闪烁间隔的自动闪烁LED并联。&lt;/div&gt;
+&lt;div class="line"&gt;用简单的单片机电路也可以产生乐曲，音乐效果和曲目选择上的自由度都大得多，同时还可以用单片机控制彩灯自由闪烁（比如按照音乐节拍变换光影）。但是对于已经买下机械八音盒的我来说，只用单片机控制彩灯耗用的资源过多了。要达到现在的设计效果，在20个三色LED时至少需要几十根线做矩阵控制，相比之下自动闪烁LED方案只需要一根电源线和一根地线，也不需要单片机编程。&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id4"&gt;
+&lt;h1&gt;&lt;a class="toc-backref" href="#id10"&gt;3&amp;nbsp;&amp;nbsp;&amp;nbsp;制作彩灯串&lt;/a&gt;&lt;/h1&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;使用自动闪烁的七彩LED与单片机控制闪烁二极管的最大好处，就是可以少引很多线，只需要将每个LED串联上5.6k的限流电阻（视所用电源而定，5v的话大约400欧~1k就够了，我为了增加电池的续航时间增大了电阻），然后直接连到电源线和地线上。&lt;/div&gt;
+&lt;/div&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcGovOHEvMDAvcGo4cTAw
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcGovOHEvMDAvcGo4cTAw
+LnBuZw==
+ /&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;将20个七彩LED打乱顺序随机焊接到电源线和地线上，间距大约5cm。快闪和慢闪LED的组合使彩灯串的光色变换更为随机。&lt;/div&gt;
+&lt;div class="line"&gt;如图所示，将两根单芯绝缘细铜线在中间用剥线钳剥开一小段皮，然后将LED正极接电源线，LED的负极接电阻，电阻的另一端接地线，接触点用烙铁焊牢。&lt;/div&gt;
+&lt;/div&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdmQvcXAvcWIvdmRxcHFi
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvdmQvcXAvcWIvdmRxcHFi
+LnBuZw==
+ /&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;焊完以后将两根线扭缠起来固定LED。不放心的话还可以滴点热熔胶固定。这时候小心些，不要把导线弄断或者弄脱焊。&lt;/div&gt;
+&lt;/div&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMnEvN3MvZ3UvMnE3c2d1
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvMnEvN3MvZ3UvMnE3c2d1
+LnBuZw==
+ /&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;做好的彩灯串，目测大约1m多一点长。具体的长度和LED间隔可以参照圣诞树的尺寸自定。&lt;/div&gt;
+&lt;/div&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOTQvcXEvbWYvOTRxcW1m
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOTQvcXEvbWYvOTRxcW1m
+LnBuZw==
+ /&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;用前先试一把，可以看到每个LED的发光并不同步。&lt;/div&gt;
+&lt;/div&gt;
+&lt;embed src="http://player.youku.com/player.php/sid/XMzM0OTQ4MjM2/v.swf" type="application/x-shockwave-flash" allowscriptaccess="sameDomain" allowfullscreen="true" wmode="opaque" width="480" height="400"&gt;&lt;/embed&gt;&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id5"&gt;
+&lt;h1&gt;&lt;a class="toc-backref" href="#id11"&gt;4&amp;nbsp;&amp;nbsp;&amp;nbsp;改装圣诞树&lt;/a&gt;&lt;/h1&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvNHovb2QvOW0vNHpvZDlt
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvNHovb2QvOW0vNHpvZDlt
+LnBuZw==
+ /&gt;
+&lt;p&gt;首先先把买来的圣诞树拆开，可以看到塑料骨架和上面的绿色PVC箔片条。箔片条的中间是一根细铁丝，用来嵌入骨架上的齿间固定。&lt;/p&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcHgveWMvN2gvcHh5Yzdo
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvcHgveWMvN2gvcHh5Yzdo
+LnBuZw==
+ /&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;把刚才做好的彩灯串缠上去，注意让LED沿四周分布均匀一点&lt;/div&gt;
+&lt;/div&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbDMvaDYvajcvbDNoNmo3
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvbDMvaDYvajcvbDNoNmo3
+LnBuZw==
+ /&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;点亮LED测试，看有没有LED在制作中断路之类。&lt;/div&gt;
+&lt;/div&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveW0vNTkvMHkveW01OTB5
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UveW0vNTkvMHkveW01OTB5
+LnBuZw==
+ /&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;把PVC箔片条原样缠回，看看效果。&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;接下来要安装电池和开关，如果圣诞树有中间的主干就只需要将电池用胶带捆在上面，但是这个框架是个中空的锥体，所以需要做个支撑平台。我在塑料框架里用强力胶粘上一根横梁，等待胶固化。然后把9v电池和按钮开关串联，按正负极接到电源线和地线上。这个接线太简单了，所以我想也不需要电路图什么的……&lt;/div&gt;
+&lt;div class="line"&gt;最后把电池用胶带缠到横梁上，点上一些胶固定。&lt;/div&gt;
+&lt;/div&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYTcvNnEvd2kvYTc2cXdp
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYTcvNnEvd2kvYTc2cXdp
+LnBuZw==
+ /&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id6"&gt;
+&lt;h1&gt;&lt;a class="toc-backref" href="#id12"&gt;5&amp;nbsp;&amp;nbsp;&amp;nbsp;安装基座&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;我对八音盒的仿红木外观很满意，所以打算直接将它用作基座。原先的八音盒盒盖上没有扣具，所以稍稍用力就能够翻开——我可不希望装在上面的圣诞树被一阵小风吹倒，或者随意一碰就翻，所以需要稍做改造。&lt;/p&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOGQvb3kvY2EvOGRveWNh
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOGQvb3kvY2EvOGRveWNh
+LnBuZw==
+ /&gt;
+&lt;p&gt;我在盒盖上粘了一个钢螺母，下面粘了一小块磁钢，做成了一个磁力搭扣。要用些力才能打开。&lt;/p&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva20vMWkveGQva20xaXhk
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva20vMWkveGQva20xaXhk
+LnBuZw==
+ /&gt;
+&lt;p&gt;最后将做好的圣诞树粘在八音盒上。9V电池的下方刚好是个平面，能够和八音盒的盒盖粘的很紧实。当然也可以考虑用一小段树枝两头分别粘在电池和盒盖上，模拟实木树干的效果。最后，把开关粘在树冠下一个不起眼的边角处。&lt;/p&gt;
+&lt;p&gt;原先我想把电池做成可替换式的，但是中间一时忽略将电池粘死了，也就只能将错就错。考虑9V电池的容量，在大约20mA的工作电流下可以工作10个小时左右，至少度过圣诞夜没有问题吧。如果能够从头开始的话我会考虑装上大容量锂电池和充电电路的，这样可以轻松达到30个小时的续航时间。&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id7"&gt;
+&lt;h1&gt;&lt;a class="toc-backref" href="#id13"&gt;6&amp;nbsp;&amp;nbsp;&amp;nbsp;大功告成&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;各处的胶彻底固化之后，合上盒盖，整理一下箔片条盖住塑料骨架和灯串，圣诞树就大功告成了。
+做好以后，它长这样：&lt;/p&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva20vYTEvNG0va21hMTRt
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2Uva20vYTEvNG0va21hMTRt
+LnBuZw==
+ /&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOXUvOGkveWIvOXU4aXli
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvOXUvOGkveWIvOXU4aXli
+LnBuZw==
+ /&gt;
+&lt;p&gt;黑暗处的彩灯效果。&lt;/p&gt;
+&lt;p&gt;、&lt;/p&gt;
+&lt;embed src="http://player.youku.com/player.php/sid/XMzM0OTY2NzE2/v.swf" type="application/x-shockwave-flash" allowscriptaccess="sameDomain" allowfullscreen="true" wmode="opaque" width="480" height="400"&gt;&lt;/embed&gt;&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;img alt="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYXEvdngvNmsvYXF2eDZr
+LnBuZw==
+ src="http://localhost:4567/_i_/aHR0cDovL2ltZzEuZ3Vva3IuY29tL2draW1hZ2UvYXEvdngvNmsvYXF2eDZr
+LnBuZw==
+ /&gt;
+&lt;p&gt;把圣诞树装进一同网购的礼品袋，完工！&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;br /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="diyer"&gt;
+&lt;h1&gt;&lt;a class="toc-backref" href="#id14"&gt;7&amp;nbsp;&amp;nbsp;&amp;nbsp;DIYer签到处&lt;/a&gt;&lt;/h1&gt;
+&lt;table class="docutils field-list" frame="void" rules="none"&gt;
+&lt;col class="field-name" /&gt;
+&lt;col class="field-body" /&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr class="field"&gt;&lt;th class="field-name"&gt;编辑:&lt;/th&gt;&lt;td class="field-body"&gt;白色的小白&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;果壳DIY站QQ群：132647923, 2群：179240860（加入时请报上你在果壳的个人主页地址，以防广告ID）&lt;/p&gt;
+&lt;p&gt;果壳DIY站微博: &lt;a target="_blank" class="reference external" href="http://t.sina.com.cn/guokrdiy"&gt;http://t.sina.com.cn/guokrdiy&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">叶子疏</dc:creator><guid>http://www.guokr.com/article/80945/</guid></item><item><title>人类最佳身高是多少？
+</title><link>http://www.guokr.com/ask/item/808/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;这个问题要看这里的“最佳”究竟是指最适合生存、还是最符合我们的文化对身高的评判。&lt;/p&gt;
+&lt;p&gt;自远古时代以来，人类的生存环境一直在变化，“最适合的身高”也一直在改变。气候是主要的影响条件，气温、气湿和降雨量与体格大小（身高、体重）呈负相关，日照、年最大气温变化与体格大小呈正相关。换句话说，越是生活在温暧潮湿地区的人群，体格越低；而越是生活在寒冷、年温差大和日照充足地区的人群，体格越高。&lt;/p&gt;
+&lt;p&gt;但是在现代社会，我们住在空调房里，不用出门打猎采摘。我们社会的核心竞争力是智力，身高和体型已经不再像原始人社会那样重要。因此，我们并不能以最适合生存为标准，评断出一个“最佳身高”。&lt;/p&gt;
+&lt;p&gt;在文化中，审美倾向是偏重于高个子（尤其是对男性）。也许我们可以通过调查统计得出一个符合大多数异性青睐的“最佳身高”。但是这是属于社会学上的问题。矮个子也并没有因此而找不到配偶、留不下后代。以人类社会主流群体在择偶中身高因素的重要性而言，这个问题还上升不到“进化论”的高度。&lt;/p&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/808/</guid></item><item><title>激素类药物到底会不会对人体有负作用呢？
+</title><link>http://www.guokr.com/ask/item/837/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;可以这样说，任何药物都有其副作用。而医生对病患的用药，就是不断权衡用药的收益和副作用的过程。如果权衡下来利大于弊，那么用药就是值得的；反之，弊大于利，那么用这个药就不合适。&lt;/p&gt;
+&lt;p&gt;激素是人体内一大类生物活性物质的总称，在体内作为化学信使调节各部分代谢关系。现代医学对于激素药物的使用普遍是谨慎的。原因在于：首先激素本身是能由小剂量引起大效应的，剂量上就很难控制；其次外部摄入可能会导致体内激素调节水平的变化而引起其他副作用；第三激素的长期使用可能导致依赖症，必须考虑停药反应的风险。（当然，激素不至于像毒品一样“戒不掉”，只要慢慢减剂量，让身体逐渐适应，完全可以避免停药反应。）&lt;/p&gt;
+&lt;p&gt;就拿激素类药物-糖皮质激素来说，此激素的安全性较高，应用范围也广，可应对各种代谢问题和炎症。但如果长期大剂量使用的话副作用非常多。比如感染扩散、消化道出血、高血压、恶心等等。这就需要权衡。糖皮质激素很有效，尤其是对重症患者，很多时候需要用而且不得不用。我们可以通过与其它药物配合使用，以降低副作用的伤害和危险。&lt;/p&gt;
+&lt;p&gt;因此看问题不能一刀切，病人的病情、激素的种类、给药时间、剂量及给药方式都会影响药物的副作用。应该说，在正确的指导和监控下，应用激素是相当安全的。&lt;/p&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/837/</guid></item><item><title>没电的电池为什么晃晃、咬咬就有电了呢？
+</title><link>http://www.guokr.com/ask/item/842/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;没有电的电池，通过一些非常手段，让它“回光返照”，最后激发一点电量，这在多年前曾经是个流传甚广的抠门小经验。不过，如今的电池在想要这般处理，恐怕不太可能。因为：没电的电池又能重新发电，这只能说明里面的电量没用完，会被浪费掉。而如今生产的电池，不仅性能提高，而且反应完全，没电了就是真的没电了，再严刑拷打也没有用的。&lt;/p&gt;
+&lt;div class="section" id="id1"&gt;
+&lt;h1&gt;电池榨干指南&lt;/h1&gt;
+&lt;p&gt;我们用的那些5号、7号电池，原理都很相似：电池内包着化学物质，通过化学反应来发电。&lt;/p&gt;
+&lt;p&gt;以前的电池，外壳是比较软的锌皮。这种电池叫做碳性锌锰电池。它有个缺点就是反应不完全：化学原料还剩下一些，但是接触不到，发不出电来。&lt;/p&gt;
+&lt;p&gt;这个时候，就该“满清十大酷刑”上场了。很多网友都试过用牙咬、用凳子压、摔或者捏等等。这些方法可以破坏电池的锌皮做的外壳，让内表面产生裂纹，露出没有反应的锌，与剩余的化学物质接触，继续反应。&lt;/p&gt;
+&lt;p&gt;不过，由于剩下的化学物质已经不多，这样折腾到底管不管用、能维持多久，那还是看rp。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h1&gt;新电池——咬不动&lt;/h1&gt;
+&lt;p&gt;但是现在的电池就不能这样做了，因为早就已经都换成“碱性电池”了。&lt;/p&gt;
+&lt;p&gt;其实碱性电池也是一种锌锰电池，但它使用了碱性更强的溶液，电性能得到了很大的提高。同时结构也做了改进，增大了反应面积。所以它能把化学物质使用得比较彻底，一旦没电，就真的没电了。&lt;/p&gt;
+&lt;p&gt;而且，碱性电池的外壳不是锌皮，而是钢筒。不光比以前难咬多了，关键是：钢筒是不参加反应的。就算再怎么咬，也不会对提高电量有帮助的。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h1&gt;镍镉电池咬不得&lt;/h1&gt;
+&lt;p&gt;还有一类电池不能不提：那就是充电电池。大部分充电5号电池都是镍镉电池和镍氢电池。&lt;/p&gt;
+&lt;p&gt;镍镉电池是万万咬不得的。因为镉是有毒的，万一不慎吃到嘴里，会在肝、肾等处积累，造成危害。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id4"&gt;
+&lt;h1&gt;总结&lt;/h1&gt;
+&lt;p&gt;如果电池寿终正寝，就不要再鞭尸了。咬、挤压、摇晃，对现在最常见的碱性电池来说是没有用的。&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/842/</guid></item><item><title>这样算是强迫症的一种么？？
+</title><link>http://www.guokr.com/ask/item/6129/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;这个问题请果壳网 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/site/psybst/"&gt;心事鉴定组&lt;/a&gt; 主题站的驻站编辑 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/i/1929785532/"&gt;0.618&lt;/a&gt; 来解答：&lt;/p&gt;
+&lt;hr class="docutils" /&gt;
+&lt;p&gt;放心好了，当然不是！&lt;/p&gt;
+&lt;p&gt;强迫症是一种焦虑障碍。根据国际通行的《精神疾病诊断与统计手册（第四版）》（DSM IV）[1]，强迫症必须同时满足两个条件：&lt;/p&gt;
+&lt;p&gt;1，被一种焦虑情绪所驱使，或者必须遵照某些规则严格执行重要行为或者心理活动。&lt;/p&gt;
+&lt;p&gt;2，行为或心理活动的目的在于防止或减轻忧虑或防止某种可怕的事件或情况发生。这些行为或心理活动和人们希望他们中止或阻止的事情缺乏实际联系，或明显过于极端。&lt;/p&gt;
+&lt;p&gt;显然你的情况并不满足这两个条件。不带纸巾确实经常给我们的生活带来不便，这种担心不是多余的、不切实际的或者极端的。带纸巾并不是出于焦虑，而是你的一种“有备无患”的正常心理。最重要的是，如果不带纸巾，你只是感到“没有安全感”而已，而强迫症患者则会出现不可抑制的严重焦虑情绪。&lt;/p&gt;
+&lt;p&gt;即使你发现自己有上述情况也没什么大不了的。1%-3%的人一生中的某一阶段都会出现强迫行为，不一定会发展成强迫症。&lt;/p&gt;
+&lt;p&gt;但是如果强迫行为已经对你的生活构成困扰，那么还是尽快看医生吧。&lt;/p&gt;
+&lt;p&gt;参考资料&lt;/p&gt;
+&lt;p&gt;[1] &lt;a target="_blank" class="reference external" href="http://www.behavenet.com/capsules/disorders/o-cd.htm"&gt;http://www.behavenet.com/capsules/disorders/o-cd.htm&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/6129/</guid></item><item><title>对电学之类完全是小白的人怎样才能达到制作机器人的水平？
+</title><link>http://www.guokr.com/ask/item/6115/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;我们请制作机器人的达人：果壳网 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/site/diy/"&gt;DIY&lt;/a&gt; 主题站的驻站编辑 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/i/1507768995/"&gt;长弓浩二&lt;/a&gt; 来回答这个问题：&lt;/p&gt;
+&lt;hr class="docutils" /&gt;
+&lt;p&gt;机器人有很多种，相应地，制作起来也有很多途径。你想制作像ASIMO、PR2或者Big Dog那样复杂的智能机器人，也许有一天这个愿望会实现的，不过现在可以先从简单的下手。参考果壳 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/site/diy/"&gt;DIY&lt;/a&gt; 的文章可以作为入门手段之一。&lt;/p&gt;
+&lt;p&gt;你需要了解基本的电子学常识，包括电压、电流、电阻、导体等等之类的内容。虽然历史上也有人用纯机械装置制造机器人，甚至还有机械计算机，但是使用现代电路对机器人进行控制是最经济也最容易实现的方法，所以电学还是要学的。不过，如果只是为了控制机器人的话，可以重点学一下数字电路和单片机（单片机的基本应用需要懂得简单的编程，推荐《爱上单片机》，杜洋著），再加上基本的电子学常识就足够应付大多数情况了。&lt;/p&gt;
+&lt;p&gt;此外，你需要熟悉一些基本的传感器，比如红外对管、光敏电阻、微动开关、温度探头，以及一些基本的执行元件，比如直流电机、步进电机、伺服电机（舵机）（舵机应用教程可参考此文：《 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/5292/"&gt;DIYer修炼：舵机知识扫盲&lt;/a&gt; 》）会让你很容易制作出一些能跟环境互动并且效果惊艳的小机器人来。&lt;/p&gt;
+&lt;p&gt;你还需要一个逻辑严谨的头脑。制作机器人的过程中，有时候遇到的问题会像老师布置的作业一样没完没了。一颗逻辑严谨的头脑可以帮助你分析遇到的各个问题，从而各个击破。&lt;/p&gt;
+&lt;p&gt;最重要的，是一颗热爱动手的心。在动手之前，一切看起来都是那么简单而清晰。一旦开始制作，你会发现意外的情况会比预计的流程还要多的多。几乎一切问题，只有在亲身试验之后才会有更直观更深刻的体会，这种体会将会帮助你更快地解决类似的问题。&lt;/p&gt;
+&lt;p&gt;果壳 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/site/diy/"&gt;DIY&lt;/a&gt; 站有很多制作机器人的文章。可以选择以下这两篇文章之一作为你的第一个机器人作品：&lt;/p&gt;
+&lt;p&gt;《 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/5870/"&gt;PVC-Robot【第一弹】:疯狂的小强·避障机器人&lt;/a&gt; 》：只要有电池、微动开关、直流电机以及一切随处可见的小东西，你就能做出一个可以表现出智能的机器人来。&lt;/p&gt;
+&lt;p&gt;《 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/43/"&gt;电机昆虫：机器城的入侵&lt;/a&gt; 》：用一些回收的废弃材料制作的机器昆虫。&lt;/p&gt;
+&lt;p&gt;这两篇可以作为有一定基础以后进阶制作的参考：&lt;/p&gt;
+&lt;p&gt;《 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/5075/"&gt;六足机器昆虫-你的下一个足式移动机器人&lt;/a&gt; 》&lt;/p&gt;
+&lt;p&gt;《 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/article/513/"&gt;自主机器人：你的私人WALL·E&lt;/a&gt; 》&lt;/p&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/6115/</guid></item><item><title>每天都喝咖啡有害健康吗？
+</title><link>http://www.guokr.com/ask/item/5920/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;科学界一直在关注咖啡对健康的影响。虽然目前已经有大量的研究，但这些研究结果却难以形成一个统一的结论。这表明咖啡对健康的作用是一个十分复杂的问题，多种因素，包括咖啡种类、每天饮用量、咖啡制作方式、饮用者年龄等，都会影响咖啡与健康的关系。&lt;/p&gt;
+&lt;p&gt;在 &lt;a target="_blank" class="reference external" href="http://en.wikipedia.org/wiki/Coffee"&gt;维基百科的“coffee”词条&lt;/a&gt; 下，可以找到如下信息：&lt;/p&gt;
+&lt;p&gt;一些研究发现：适量饮用咖啡是有好处的，降低了包括早老性痴呆[1]、帕金森症、心脏病、2型糖尿病[2]、肝硬化[3]和痛风等疾病的发病风险。但同时，研究发现咖啡使胃食管反流及相关疾病的风险增加了[4]，还有可能让孕妇和婴儿产生缺铁性贫血[5]。&lt;/p&gt;
+&lt;p&gt;咖啡的主要成分是咖啡因，这是一种可以作用于神经系统的兴奋剂，也是咖啡提神功能的主要来源。但同时，很多人相信咖啡中的咖啡因会引起偏头痛[6]，虽然关于这一点还在争论中。咖啡因也有可能引发心律不齐和睡眠障碍等症状[7]。&lt;/p&gt;
+&lt;p&gt;咖啡并不适合所有人，肝脏疾病患者、消化系统疾病患者、孕妇、儿童等人群是不建议饮用的，老人也应少喝。但对健康人来说，目前的研究表明，适度饮用咖啡是安全的。一杯特浓咖啡（espresso）中含有咖啡因的量是100mg左右。而一个50公斤重的健康人，一次摄入7.5g-10g的咖啡因，才会达到产生危险的剂量，这相当于短时间内饮用了75-100杯特浓咖啡。因此，每天喝3-4杯咖啡是不会影响健康的。&lt;/p&gt;
+&lt;hr class="docutils" /&gt;
+&lt;p&gt;参考文献&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;[1] Eskelinen, M.; Ngandu, T.; Tuomilehto, J.; Soininen, H.; Kivipelto, M. (2009). &amp;quot;Midlife coffee and tea drinking and the risk of late-life dementia: a population-based CAIDE study&amp;quot;. Journal of Alzheimer's disease : JAD 16 (1): 85–91.&lt;/div&gt;
+&lt;div class="line"&gt;[2] Pereira, Mark A; Parker, Emily D; Folsom, Aaron R (2006). &amp;quot;Coffee consumption and risk of type 2 diabetes mellitus: an 11-year prospective study of 28 812 postmenopausal women&amp;quot;. Archives of Internal Medicine 166 (12): 1311–6.&lt;/div&gt;
+&lt;div class="line"&gt;[3] Klatsky, Arthur L; Morton, Cynthia; Udaltsova, Natalia; Friedman, Gary D (June 12, 2006). &amp;quot;Coffee, cirrhosis, and transaminase enzymes&amp;quot;. Archives of Internal Medicine 166 (11): 1190–5.&lt;/div&gt;
+&lt;div class="line"&gt;[4] Gillson, Sharon (November 28, 2007). &amp;quot;10 Most Frequent Causes of Heartburn&amp;quot;. About.com. &lt;a target="_blank" class="reference external" href="http://heartburn.about.com/cs/causes/a/heartburncauses.htm"&gt;http://heartburn.about.com/cs/causes/a/heartburncauses.htm&lt;/a&gt;. Retrieved January 26, 2010.&lt;/div&gt;
+&lt;div class="line"&gt;[5] Muñoz, Leda M; Lönnerdal, Bo; Keen, Carl L; Dewey, Kathryn G (September 1988). &amp;quot;Coffee consumption as a factor in iron deficiency anemia among pregnant women and their infants in Costa Rica&amp;quot; (PDF). American Journal of Clinical Nutrition 48 (3): 645–51.&lt;/div&gt;
+&lt;div class="line"&gt;[6] 1.Knut Hagen, Kari Thoresen, Lars Jacob Stovner, John-Anker Zwart. High dietary caffeine consumption is associated with a modest increase in headache prevalence: results from the Head-HUNT Study. Journal of Headache Pain, 2009; 10: 153-159.&lt;/div&gt;
+&lt;div class="line"&gt;[7] Palmer, Sharon (May 2009). &amp;quot;Coffee Buzz – Trends and Possible Perks of America's Beloved Beverage&amp;quot;. Today's Dietitian 11 (5): 26. &lt;a target="_blank" class="reference external" href="http://www.todaysdietitian.com/newarchives/050409p26.shtml"&gt;http://www.todaysdietitian.com/newarchives/050409p26.shtml&lt;/a&gt;. Retrieved February 2, 2010.&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/5920/</guid></item><item><title>【我好想问】果壳问答的有奖活动怎么参加？
+</title><link>http://www.guokr.com/ask/item/76608/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;“为什么有时候看到一个汉字时间长了会觉得不认识这个字呢？”“为什么泡在水里久了手指头皮肤会发皱啊？”“如果光速降到十公里每小时会发生什么事情？”“真的会有平行宇宙吗？” ……&lt;/p&gt;
+&lt;p&gt;你是不是也过同样的困惑，但面对着日常琐碎的生活，已逐渐失去了以前对世界打破沙锅问到底的好奇心？&lt;/p&gt;
+&lt;p&gt;又或者，很多问题虽然困惑你，却没有人可问、可讨论，而后被你遗忘，或者深埋心底？&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;我好想问：&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;来 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/ask/"&gt;果壳问答&lt;/a&gt; ，点击右上角的“我好想问”按钮，提出一直困惑着你的问题吧！我们将选出50个最具果壳范儿的问题，印在即将面世的纪念版果壳笔记本的侧边，带着你的果壳ID，成为最具有升值潜力的绝版珍藏。&lt;/p&gt;
+&lt;p&gt;每个被选出问题的提问者，还将获得一个纪念版果壳笔记本！&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;﻿你知道吗：﻿&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;如果你更愿意分享你的知识和经验，认真回答大家的提问，我们也准备了30本果壳重磅新书等着你！&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;活动时间：&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;12月1日00:00-12月16日24:00&lt;/div&gt;
+&lt;div class="line"&gt;12月19日公布获奖名单&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;活动方法：&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;strong&gt;第一部分：“我好想问”&lt;/strong&gt;&lt;/div&gt;
+&lt;div class="line"&gt;在果壳问答，使用“【我好想问】+提问”的格式来提出你的问题。在活动结束后将由编辑挑选出50个最佳提问。&lt;/div&gt;
+&lt;div class="line"&gt;示例：&lt;/div&gt;
+&lt;div class="line"&gt;“【我好想问】为什么会感觉有些事情曾经发生过？”&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;strong&gt;第二部分：“你知道吗”&lt;/strong&gt;&lt;/div&gt;
+&lt;div class="line"&gt;在 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/post/76263/"&gt;这个帖子&lt;/a&gt; 内回复报名，并热心参与果壳问答的问题，分享你的知识经验和认真的答案。编辑将根据两周内的表现，从报名人员中挑选出30个热心的优质答案提供者。&lt;/div&gt;
+&lt;div class="line"&gt;示例：&lt;/div&gt;
+&lt;div class="line"&gt;“我要参加‘你知道吗’热心回答比赛。”&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;活动奖励：&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;strong&gt;最佳提问（50个）&lt;/strong&gt;&lt;/div&gt;
+&lt;div class="line"&gt;你的提问和你的名字将会被印在纪念版果壳笔记本的侧边；&lt;/div&gt;
+&lt;div class="line"&gt;你将获得一本纪念版笔记本。&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;strong&gt;热心回答（30个）&lt;/strong&gt;&lt;/div&gt;
+&lt;div class="line"&gt;你将在第一时间获得果壳阅读12月重磅推出的新书一本。&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;tips&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;strong&gt;这样的问题更容易被选中：&lt;/strong&gt;&lt;/div&gt;
+&lt;div class="line"&gt;能引发共鸣的（同问者高），加分！&lt;/div&gt;
+&lt;div class="line"&gt;常规搜索引擎上搜索无力的，加分！&lt;/div&gt;
+&lt;div class="line"&gt;能引发更多人思考提问的，加分！&lt;/div&gt;
+&lt;div class="line"&gt;得到靠谱的回答者，加分！&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;strong&gt;这样的问题不会被选中：&lt;/strong&gt;&lt;/div&gt;
+&lt;div class="line"&gt;不符合格式要求的；&lt;/div&gt;
+&lt;div class="line"&gt;标题表意不清的。&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;&lt;strong&gt;这样的问题可能会被关闭或者删除：&lt;/strong&gt;&lt;/div&gt;
+&lt;div class="line"&gt;涉及政治等敏感问题的；&lt;/div&gt;
+&lt;div class="line"&gt;不符合现行法律法规的；&lt;/div&gt;
+&lt;div class="line"&gt;涉及版权客服问题的；&lt;/div&gt;
+&lt;div class="line"&gt;涉及骚扰他人的。&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;若你在活动中有疑问，可&amp;#64; &lt;a target="_blank" class="reference external" href="http://www.guokr.com/i/1350309974/"&gt;果壳网孙小年&lt;/a&gt; 。&lt;/p&gt;
+&lt;p&gt;活动结束以后，工作人员将会修改提问标题。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;活动解释权归果壳网所有。&lt;/strong&gt;&lt;/p&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/76608/</guid></item><item><title>洗过头之后，自然风干 or 用电吹风吹干，哪个更伤头发？
+</title><link>http://www.guokr.com/ask/item/21162/</link><description>&lt;div class="document"&gt;
+&lt;table class="docinfo" frame="void" rules="none"&gt;
+&lt;col class="docinfo-name" /&gt;
+&lt;col class="docinfo-content" /&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr class="field"&gt;&lt;th class="docinfo-name"&gt;作者:&lt;/th&gt;&lt;td class="field-body"&gt;&lt;a target="_blank" class="reference external" href="http://www.guokr.com/i/0420226846/"&gt;Vitamins&lt;/a&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;严格来说，用吹风机更可能产生损伤。自然风干一般不会对发质造成伤害，除非你用毛巾擦的时候使劲儿搓。[1][2]&lt;/p&gt;
+&lt;p&gt;吹风机的原理是利用产生的气流，带动水分蒸发，让头发干得更快。使用热风可以加速蒸发，但是过热的温度会导致头发变得干枯、无光泽，甚至分叉及断裂。[3]MM们都不会陌生理发师吹头发的过程。在使用电吹风进行辅助造型时，造型师总是用冷风做最后处理。&lt;/p&gt;
+&lt;p&gt;此外，有一种称作结节性脆发病的头发疾病，患者的头发很容易断裂脱落。这种病也可因过度吹头发而引发。[4]&lt;/p&gt;
+&lt;p&gt;对某些人来说，电吹风可用可不用。尤其现在暖和的天气很适合自然风干，省电省钱、还低碳。但如果你有重要的约会，或赶时间上班，或者你属于发量很多、早上洗头中午才干的可怜孩子，吹头发是不可避免的事。其实如果正确使用电吹风并配合适当的护理，对头发的损伤是可以降低和避免的。&lt;/p&gt;
+&lt;p&gt;吹风机虽然是一个实用的生活工具，让我们免于头发湿答答之苦，但我们要明白，它不具有改善发质的能力。[5]如果你的头发有营养不良等状况，除了要选择合适的洗发水、护发素等产品，同时也要尽量少用电吹风，尤其是热风。&lt;/p&gt;
+&lt;div class="section" id="id1"&gt;
+&lt;h1&gt;怎么吹才不伤发?&lt;/h1&gt;
+&lt;p&gt;首先，买一个靠谱的吹风机。质量越好的机器风力越强，更容易带走水分。出风口带网格的可以分散气流，减少热力损害。选有调温档的吹风机，这样在不需高温的时候还可用低温吹。[7]护发产品最好用保湿滋养的，能够保持头发湿润、减少分叉。[3]洗完头先用干毛巾把头发擦至不滴水，动作要温柔。用力过大，摩擦力也会损伤头发。使用电吹风时，与头发须保持6-8cm距离，从发根开始吹。最好能边吹边整理，也可以分成几份吹干，这样头发不容易打结。最后还要留有一定湿气，让它自然风干或用冷风定型。[1][2][7]&lt;/p&gt;
+&lt;p&gt;参考资料&lt;/p&gt;
+&lt;div class="line-block"&gt;
+&lt;div class="line"&gt;[1] &lt;a target="_blank" class="reference external" href="http://www.googobits.com/articles/664-how-to-minimize-the-damage-done-by-your-blow-dryer.html"&gt;How to Minimize the Damage Done by Your Blow Dryer&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[2] &lt;a target="_blank" class="reference external" href="http://www.wikihow.com/Wash-Your-Hair"&gt;How to Blow Dry Hair&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[3] &lt;a target="_blank" class="reference external" href="http://en.wikipedia.org/wiki/Hair_care#Split_ends"&gt;Wikipedia: Hair_care#Split_ends&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[4] &lt;a target="_blank" class="reference external" href="http://health.nytimes.com/health/guides/disease/trichorrhexis-nodosa/overview.html"&gt;Trichorrhexis Nodosa&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[5] &lt;a target="_blank" class="reference external" href="http://www.enotes.com/how-products-encyclopedia/hair-dryer"&gt;Hair Dryer&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[6] &lt;a target="_blank" class="reference external" href="http://www.consumersearch.com/hair-dryers/review"&gt;Hair Dryer Review&lt;/a&gt;&lt;/div&gt;
+&lt;div class="line"&gt;[7] &lt;a target="_blank" class="reference external" href="http://www.webmd.com/skin-beauty/features/how-not-to-wreck-your-hair"&gt;How Not to Wreck Your Hair&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/21162/</guid></item><item><title>孵小鸡的鸡蛋有性别吗
+</title><link>http://www.guokr.com/ask/item/23186/</link><description>&lt;div class="document"&gt;
+&lt;table class="docinfo" frame="void" rules="none"&gt;
+&lt;col class="docinfo-name" /&gt;
+&lt;col class="docinfo-content" /&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr class="field"&gt;&lt;th class="docinfo-name"&gt;作者:&lt;/th&gt;&lt;td class="field-body"&gt;瘦驼，小耿&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;这个问题的答案虽然不难理解，但却引申出了很多有趣的、深刻的话题。所以我们来详细讨论一下“鸡蛋的性别”。&lt;/p&gt;
+&lt;div class="section" id="id1"&gt;
+&lt;h1&gt;观点一：受惊，不对，受精的鸡蛋才有性别？&lt;/h1&gt;
+&lt;p&gt;在果壳问答《鸟、禽类是如何受精交配的？》中，我们讨论过鸡蛋（和其它鸟类的蛋）的受精过程。简单来说，母鸡先产生卵子，卵子向着“鸡蛋装配车间”（卵巢）一路进发。路上，如果遇到了公鸡爸爸放在这里的精子，就变成了受精卵；如果一路都没遇到，未受精的卵子也会自己跑到车间里，被组装到一颗鸡蛋中。&lt;/p&gt;
+&lt;p&gt;含有受精卵的鸡蛋，可以孵化出小鸡，而小鸡的性别其实从受精的那一刻起就已经注定了。所以，问题里说的“孵小鸡的鸡蛋”确实是有性别的。不过，现实中还没有什么有效的方法可以鉴别。民间虽然有一些偏方，甚至还有一项专利，但都是不可靠的。&lt;/p&gt;
+&lt;p&gt;另一种的鸡蛋则含有“未受精卵”。我们在超市、小摊上买来的都属于这一类型（是的，你冰箱里的鸡蛋是孵不出小鸡的，不要抱着幻想了）。这一类鸡蛋有没有性别呢？这个话题就深了……&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h1&gt;观点二：未受精的鸡蛋是单倍体，相当于雄蚁？&lt;/h1&gt;
+&lt;p&gt;我们知道，小鸡体内有两套染色体，一套来自鸡妈妈，一套来自鸡爸爸。而没有受精的鸡蛋，只有鸡妈妈的染色体。和受精的鸡蛋相比，染色体少了一半，属于单倍体。&lt;/p&gt;
+&lt;p&gt;但是我们也不能歧视单倍体。在自然界也有一些动物，就算染色体只有一半，一样可以发育、长大。最典型的例子是蜜蜂和蚂蚁。以蚂蚁为例，蚁后和工蚁都是“完整的”蚁，都含有两套染色体；而那些人生意义就是交配的雄蚁们，则是由未受精的卵发育来的，只有一套染色体。蜜蜂中的雄蜂也是如此，别看他名字叫“雄风”，其实都是基因不完全的残次品。&lt;/p&gt;
+&lt;p&gt;蜜蜂和蚂蚁的性别就是由染色体数量决定的。含有全部两套染色体的，就是雌性（蚁后、工蚁、蜂后、工蜂）；只有一套染色体的，就是雄性。未受精鸡蛋也只有一套染色体，这么说，是雄性？&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h1&gt;观点三：鸡与虫豸焉可相提并论？&lt;/h1&gt;
+&lt;p&gt;但是，鸡和蜜蜂、蚂蚁，毕竟是天差地别。最重要的一个区别在于，鸡的性别是由“性染色体”决定的。&lt;/p&gt;
+&lt;p&gt;鸡受精卵内有两条性染色体：含有ZW（一条Z型、一条W型）的受精卵发育成母鸡；含有ZZ（两条Z型）的受精卵发育成公鸡。这一点和人类恰好相反：人类虽然也有两条性染色体，但是，含有XY（相当于ZW）的是男人，含有XX（相当于ZZ）的是女人。这是鸟类与哺乳动物之间的一个重要分歧。&lt;/p&gt;
+&lt;p&gt;但是，未受精的鸡蛋里只有一条Z染色体，既不能算ZW，也和ZZ毕竟不同。从这个意义上说，它既不能算雄性，也不能算雌性，根本就无所谓性别。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id4"&gt;
+&lt;h1&gt;观点四：终极答案出现——孤雌生殖&lt;/h1&gt;
+&lt;p&gt;解答到这里就完了吗？错！自然界还有一个现象，可以让“没有性别”的未受精鸡蛋找回真实的自己！这种现象叫做“孤雌生殖”。&lt;/p&gt;
+&lt;p&gt;顾名思义，孤雌生殖就是不需要雄性，雌性自身可以产生后代的繁殖方式。一位生物学家贝蒂博士Dr.A.Beatty给出过一个更严谨的定义：“无须精子，一个卵即可以发育成胚，而不管这个胚是否能发育成个体”。用鸡蛋来打比方，就相当于从未受过精的鸡蛋，发育成了一个小小的胚胎，不过它不一定能长大成为小鸡。&lt;/p&gt;
+&lt;p&gt;其实，上文提到的雄蜂和雄蚁就属于孤雌生殖的产物（他俩真是躺着也中枪）。另外，有一些生活在美国和墨西哥的鞭尾蜥则完全采用孤雌生殖。它们的物种里没有雄性，雌性自己生下新的雌性。不过纠结的是，它们的雌性之间仍然有交配行为！[1]&lt;/p&gt;
+&lt;p&gt;但是，不要以为孤雌生殖只是些稀奇古怪动物的稀奇古怪行为。在某些情况下，一些鸡类也具有这种能力。&lt;/p&gt;
+&lt;p&gt;1953年，美国科学家奥尔森（M.W.Olsen）意外的发现，14%的贝尔茨威尔小种白火鸡（Beltsville Small White）的未受精蛋可以发育。[2]上世纪80年代，人们又发现两种常见的鸡种——横斑洛克公鸡和白来亨母鸡杂交后的母鸡产的未受精蛋中，也有15%可以发育。但是这些鸡蛋中的大部分到第三天就停止发育了，不能真正孵出小鸡来。[3]&lt;/p&gt;
+&lt;p&gt;不过也有成功案例：美国马里兰州动物生理及遗传研究所的莎薇拉（P.Sarvella）曾经用“处女鸡”下的8000只蛋孵出7只小鸡，其中三只没活过一周，其他四只也十分虚弱。[3]所以，如果你足够幸运，超市里的买来的鸡蛋也是可以孵出小鸡来的。当然，可能你要孵个几千上万颗才能遇到一只能成功的。&lt;/p&gt;
+&lt;p&gt;这样获得的小鸡一定是公鸡。原因在于，孤雌生殖是将原先仅有的一套染色体复制了一倍，变成两套，从而能够发育。未受精卵只有一条Z染色体，复制后变成了ZZ，而性染色体为ZZ的小鸡，我们上文说了，是公鸡。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;结论：我们从市场买来的一般是未受精的鸡蛋，正常来说孵不出小鸡，也无所谓性别。但极罕见的情况下，未受精的鸡蛋也会由于孤雌生殖而孵出一只小公鸡。&lt;/strong&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id5"&gt;
+&lt;h1&gt;后话：哺乳动物中的孤雌生殖&lt;/h1&gt;
+&lt;p&gt;相较而言，哺乳动物孤雌生殖理论上困难得多。由于存在一种特殊的“印记基因”机制，缺乏雄性遗传物质的哺乳动物胚胎很难存活。目前尚未有自然界哺乳动物孤雌生殖的案例。不过，人工的孤雌哺乳动物已经诞生了，2004年，日本东京农业大学的科学家用孤雌生殖的方法创造出一只没有父亲的小鼠——辉夜姬。&lt;/p&gt;
+&lt;p&gt;顺便说一下人类。我们当然不会在实验室里对人类进行“孤雌生殖”！但是，现实生活中是否有自然发生的案例呢？早在1955年，英国某家报纸刊登启事，寻找“处女生子”的妈妈。由于人类女性的性染色体是XX，不可能孤雌生殖出XY的男性，出于科学方面的考虑，启事中提醒只有孩子是女孩儿的才可以。果真有不少母女报名，生物学家林恩（Balfour-Lynn）负责对这些母女进行了检查，结果没有一对经得起“生物学检验”。也就是说，都是来蒙事儿的。[4]&lt;/p&gt;
+&lt;p&gt;（感谢 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/i/1097261074/"&gt;哀兔&lt;/a&gt; 对本文的指正。）&lt;/p&gt;
+&lt;p&gt;参考资料&lt;/p&gt;
+&lt;p&gt;[1] Phillip C. Watts, Kevin R. Buley, Stephanie Sanderson, Wayne Boardman, Claudio Ciofi &amp;amp; Richard Gibson. Parthenogenesis in Komodo dragons. Nature 444, 1021-1022 (21 December 2006)&lt;/p&gt;
+&lt;p&gt;[2] M. W. Olsen. Twelve year summary of selection for parthenogenesis in Beltsville Small White turkeys. British Poultry Science. Volume 6, Issue 1, 1965, Pages 1 - 6&lt;/p&gt;
+&lt;p&gt;[3] PATRICIA SARVELLA. Adult Parthenogenetic Chickens. Nature 243, 171 (18 May 1973)&lt;/p&gt;
+&lt;p&gt;[4] Greta Rensenbrink. Parthenogenesis and Lesbian Separatism: Regenerating Women's Community through Virgin Birth in the United States in the 1970s and 1980s. Journal of the History of Sexuality, Volume 19, Number 2, May 2010, pp. 288-316&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/23186/</guid></item><item><title>水洗羽绒服会影响羽绒服保暖效果吗？
+</title><link>http://www.guokr.com/ask/item/5837/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;大部分羽绒制品是可以水洗的。如果是质量合格的产品，经正确的方式洗涤，是不会影响保暖效果的。但如果洗涤方式不恰当，会对品质和保暖效果造成损害。我们推荐将羽绒服送到专业的洗衣店来清洗。如果确实要自己洗，一定要遵循衣服上标注的正确的洗涤说明。&lt;/p&gt;
+&lt;p&gt;我们在国外一个知识类社区网站eHow.com上找到了关于羽绒服洗涤的一些注意事项（ &lt;a target="_blank" class="reference external" href="http://www.ehow.com/how_5937605_wash-down-coat.html"&gt;原文&lt;/a&gt; ）：&lt;/p&gt;
+&lt;p&gt;1，最好使用前开门的滚筒式洗衣机。上开门的涡轮洗衣机的涡轮在旋转时可能会扭曲损坏羽绒服里的羽毛。&lt;/p&gt;
+&lt;p&gt;2，使用轻柔模式。避免损伤羽绒服。&lt;/p&gt;
+&lt;p&gt;3，用冷水洗涤。这样可以防止羽绒缩水。&lt;/p&gt;
+&lt;p&gt;4，使用羽绒服专用的洗涤剂。非专用的洗涤剂有时可能会导致羽毛粘连在一起。&lt;/p&gt;
+&lt;p&gt;5，低温干燥，直到完全干透。这样可以避免羽毛粘连。如果是悬挂晾干，每隔一会儿可以手动把羽绒弄松一些，但不应用力。&lt;/p&gt;
+&lt;p&gt;有时，洗过的羽绒服里的羽绒结成了一团，坠在衣服底层。这种情况可能是干燥没有干透。羽绒服需要花很长时间才能完全干透，之后羽绒会回到原先均匀分布的状态。&lt;/p&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/5837/</guid></item><item><title>西藏是否存在传说中的地球轴心？
+</title><link>http://www.guokr.com/ask/item/3550/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;历史上，确实有一支纳粹赞助的探险小队去过西藏，但他们并不是去寻找什么“地球轴心”，而是另有原因。&lt;/p&gt;
+&lt;p&gt;纳粹的领导人之一：海因里希·希姆莱本人对于神秘学十分感兴趣。他领导着一个智囊团“古代遗产研究和教学学会”，这个智囊团的主要目的就是从历史学、人类学等角度证明日耳曼民族的高贵，为纳粹统治服务。当时有一个观点认为：日耳曼民族的祖先雅利安人曾经在公元前2000年左右征服过亚洲，而西藏正是雅利安民族的发祥地，释迦牟尼佛本人也是雅利安人的后代。显然，如果能从人类学的角度证明这一点，就可以辅助证明纳粹所宣传的“日耳曼民族曾经征服过全世界”这一观点，也可以将希特勒的思想体系同佛教结合在一起进行推广——纳粹认为：既然希特勒和释迦牟尼都是同一人种的后代了，当然在思想上有一些共通的地方。&lt;/p&gt;
+&lt;p&gt;出于这个目的，希姆莱在1938年（当时二战还未爆发）组织了一直五人的探险队前往西藏。成员包括博物学家和人类学家，领队是博物学家恩斯特·舍费尔。这支探险队到达了拉萨，同当地统治者与权贵建立了友好关系。他们在西藏收集了很多照片、动植物样品以及当地人面部和颅骨特征数据。探险队1939年回到了德国，受到希姆莱的嘉奖。舍费尔后来写了《白哈达的节日：一个穿越西藏抵达拉萨的研究之旅，这是上帝的圣城》一书。整个探险经历还拍成了纪录片《神秘的西藏》。但是对面部和颅骨数据的后续研究就没有了下文，可能希姆莱预想的“寻找雅利安民族起源”这一目的并没有完全实现。&lt;/p&gt;
+&lt;p&gt;这次探险虽然带有政治目的，但科学考察的性质更突出一些。而且整个过程都发生在二战爆发之前。显然不是传言里说的什么寻找“地球轴心”之旅。&lt;/p&gt;
+&lt;p&gt;这次探险之后，还曾有一群德国人去过西藏。传言认为：他们是希特勒和希姆莱在纳粹形势危急之时，于1941年派出，前往西藏寻找“地球轴心”并试图“反转历史”。&lt;/p&gt;
+&lt;p&gt;但其实，这群人与其说是探险，不如说是逃亡。他们本来是德国的登山者，主要成员包括彼得·奥夫施耐德和海因里希·哈勒，前往西藏探索攀登南迦帕尔巴特峰的新路径。这次登山发生在1939年，与舍费尔的西藏之旅差不多同时。但这群人在回国途中，途经印度时赶上了二战爆发，被当地的英军扣留，关进了隔离营。直到1944年才逃出来，逃往最近的边境，进入西藏。也就是说，传言里所谓的“二战形势危急，希姆莱派出第二支探险队”的那个时间（按照传言提供的时间是1941年-1943年），奥夫施耐德和哈勒正在英军的隔离营里关着呢。&lt;/p&gt;
+&lt;p&gt;这两个人在西藏呆了七年。1946年到达拉萨，还和第14世达赖喇嘛（当时11岁）成了好朋友。1951年西藏解放前他们离开，回到奥地利。哈勒后来写了《西藏七年》和《迷失的拉萨》等书，十分畅销，还被两次改编成电影，其中一次的主演是布拉德皮特哦。&lt;/p&gt;
+&lt;p&gt;这两次西藏探险都和什么“地球轴心”扯不上关系。这个说法其实只是一个流传不甚广泛的阴谋论而已。地球自转的轴心是南极北极，磁场轴心大体与南北极接近。除此之外，再没有什么“地球轴心”了。二战中的纳粹一方自称“轴心国”，这一说法起源于柏林和罗马处于同一经度线上，其连线被墨索里尼称为“轴心”，与“地球轴心”也没有联系。&lt;/p&gt;
+&lt;p&gt;参考资料：&lt;/p&gt;
+&lt;p&gt;维基百科：&lt;/p&gt;
+&lt;dl class="docutils"&gt;
+&lt;dt&gt;&lt;a target="_blank" class="reference external" href="http://en.wikipedia.org/wiki/1938%E2%80%931939_German_expedition_to_Tibet"&gt;1938-1939德国西藏探险&lt;/a&gt;&lt;/dt&gt;
+&lt;dd&gt;&lt;/dd&gt;
+&lt;dt&gt;&lt;a target="_blank" class="reference external" href="http://en.wikipedia.org/wiki/Ahnenerbe"&gt;古代遗产研究和教学学会&lt;/a&gt;&lt;/dt&gt;
+&lt;dd&gt;&lt;/dd&gt;
+&lt;dt&gt;&lt;a target="_blank" class="reference external" href="http://en.wikipedia.org/wiki/Heinrich_Harrer"&gt;海因里希·哈勒&lt;/a&gt;&lt;/dt&gt;
+&lt;dd&gt;&lt;/dd&gt;
+&lt;/dl&gt;
+&lt;p&gt;百度文库：&lt;/p&gt;
+&lt;dl class="docutils"&gt;
+&lt;dt&gt;&lt;a target="_blank" class="reference external" href="http://wenku.baidu.com/view/0190d50d4a7302768e993962.html"&gt;东方主义、民族区域自治与尊严政治&lt;/a&gt;&lt;/dt&gt;
+&lt;dd&gt;&lt;/dd&gt;
+&lt;/dl&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/3550/</guid></item><item><title>痰和鼻涕有啥区别？
+</title><link>http://www.guokr.com/ask/item/1426/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;痰和鼻涕同属于呼吸系统分泌的粘液。虽然组成成分相似，均以水分和糖蛋白为主；但它们是两种不同的分泌物，差别还是很大的。&lt;/p&gt;
+&lt;p&gt;痰是下呼吸道（气管、支气管、肺部等）分泌的、一般通过咳嗽排出体外的粘液。它的内部包含有外界入侵的灰尘等杂质、由于疾病而产生的坏死组织和细胞等。吐痰的时候，肺泡表面的分泌物包裹了上述杂质、坏死细胞，在呼吸到纤毛的向外推动作用下运动到咽喉，经由口腔被吐出去。痰的颜色、量、粘稠度及是否含有泡沫等都可以作为疾病的判断依据，例如大叶性肺炎会有特别的铁锈色痰、肺水肿则可能会出现粉红色泡沫痰等。&lt;/p&gt;
+&lt;p&gt;而鼻涕则是由鼻腔分泌的粘液，具有湿润鼻腔的作用。正常情况下鼻涕量很少，一部分在鼻腔内风干，形成鼻涕痂；还有一部分会向口咽部移动，最终被吞咽到胃里——虽然听起来有点恶心，但其实这个现象每时每刻都在发生，而且是无害的。感冒的时候，人会产生大量的“清水鼻涕”，这在医学上叫做“卡他症状”，它是由于鼻黏膜水肿和炎症因子刺激作用下，鼻腔分泌了大量液体。这时产生的鼻涕是清澈透明的。而如果发生了鼻窦炎等疾病，鼻涕会包含细菌或坏死的免疫细胞等，呈现黄色、粘稠状。&lt;/p&gt;
+&lt;p&gt;这两种粘液产生的部位不同，对疾病情况的反映也有差别，不可混淆。有些时候，鼻涕会经由口腔被吐出来，而如果恰好又是上述黄色粘稠的鼻涕，很有可能被误认为是痰——这也就是医学上所说的“假痰”。&lt;/p&gt;
+&lt;hr class="docutils" /&gt;
+&lt;p&gt;本篇由在临床系学习的 &lt;a target="_blank" class="reference external" href="http://www.guokr.com/i/0420226846/"&gt;Vitamins&lt;/a&gt; 提供。&lt;/p&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/1426/</guid></item><item><title>高层用户失火如何自救，需要准备哪些东西？
+</title><link>http://www.guokr.com/ask/item/1490/</link><description>&lt;div class="document"&gt;
+&lt;p&gt;关于高层建筑失火时的自救和逃生策略，我们采访了几位专业人士。&lt;/p&gt;
+&lt;p&gt;浙江省某消防大队的一位参谋给我们提供了一些真实救火案例中出现的细节问题。他提到：着火时如果要出门逃生的话，开门时一定要采取这个动作：先用一只脚抵住门，然后轻轻打开一条缝。这是因为：万一门外已经着火，热浪和浓烟会在开门的一瞬间涌进门内，让你想关门都关不上，十分危险。所以一定要确保：一旦形势不对，要有把握立刻把门关上。&lt;/p&gt;
+&lt;p&gt;他还提到：很多人匆匆下楼，随手把门一关，到楼下发现道路被封再想回到屋内，却发现忘了带钥匙，进不了门。所以逃生不能慌乱，火焰蔓延需要一定的的速度，完全有时间冷静判断一下再出门。出门时也要留好退路，万一路被封了，就要退回来。&lt;/p&gt;
+&lt;p&gt;此外消防人员还提醒我们：如果在家中躲避，注意不可以藏得太深，以至于消防人员找不到你。因为火灾现场光线很暗，浓烟滚滚，而且声音嘈杂，而里面的人往往已经被呛得发不出声，或者已经昏迷，很容易被救援人员错过。所以这种情况下，就算昏迷，也要找个显眼的地方。&lt;/p&gt;
+&lt;p&gt;北京市某建筑公司的安监工程师则从建筑防火的角度为我们提供了一些信息。例如：高层建筑按规定必须有两条防烟楼梯间，既能防烟也能防火，逃生时要尽量选择这个通道。另外，百米以上的高楼，按规定每十五层要设一个避难层（有时也叫设备层）。这一层有严格规定的防火防烟和通风能力，且可燃物不多。高层用户来不及逃下楼的话，可以逃到这一层暂避。&lt;/p&gt;
+&lt;p&gt;综合专家的意见和很多关于火灾现场逃生的指导，我们对于高层建筑失火时的逃生和自救中的常见问题，作出以下回答：&lt;/p&gt;
+&lt;p&gt;1，出门逃生还是留待救援&lt;/p&gt;
+&lt;p&gt;这个决定要根据情况来定。首先最好能判断起火点在哪里，至少知道是楼上还是楼下，然后再推断一下有没有机会撤离大楼。&lt;/p&gt;
+&lt;p&gt;如果决定出门逃生，开门是个至关重要的动作。首先必须判断门外到底有没有火，如果门外已经一片火海，那就千万不能开门，留下等待救援吧。判断的方法很简单，可以试探性地摸一下门的金属把手看是否已经发烫，以及可以从猫眼或门下缝隙中往外观察。开门一定要采取正确的姿势，确保在形势不对时能够立刻把门关上，避免热浪和浓烟把门冲开。出门时要留好万一需要回来的退路，带好钥匙。&lt;/p&gt;
+&lt;p&gt;2，怎样选择逃生之路&lt;/p&gt;
+&lt;p&gt;如果判断出起火点，一般要向远离火场的方向逃跑。但高层建筑，特别是纯住宅，有时很难弄清起火点在哪里，只能随机应变。逃跑时，最好用湿毛巾捂住口鼻，身体伏低，躲避上方的浓烟。要知道，火灾现场的遇难者，绝大多数是窒息所致，真正死于火焰的很少。因此防止窒息是最关键的。&lt;/p&gt;
+&lt;p&gt;首选的撤离通道是防烟楼梯。没有防烟楼梯就用普通楼梯。电梯是万万不能用的，火灾中电力中断只是分分钟的事情。如果大楼备有消防电梯，倒是可以用一下。&lt;/p&gt;
+&lt;p&gt;如果向下逃生的道路被封，可以逃往避难层暂避。但只有百米以上的高楼才会设立避难层，如果没有的话，最好是退回屋内，不要贸然上楼顶。烟火向上走，往往越高火势越大。但如果屋内已经起火，也就只好往楼顶逃了。有的建筑，楼顶有各个单元的出入口，可以通过别的单元逃下楼去。就算不行，守在楼顶也能够得到救援。&lt;/p&gt;
+&lt;p&gt;3，怎样在家中据守&lt;/p&gt;
+&lt;p&gt;被火困在了家里，也不能着急，依旧要保持冷静。首先要把门用水打湿，延缓火势进来。火灾发生后，供水系统还可以维持一段时间，因为一般的高层建筑都装有补给泵，起火之后，补给泵会自动启动，通过楼顶水箱为户内供水，短时间内供灭火之用。然后要赶紧从窗户和阳台呼救，让消防员知道这一层有人。&lt;/p&gt;
+&lt;p&gt;如果火焰进入屋内，最好是退守阳台。没有阳台的话，卫生间也可以用来躲避，这里有水源且易燃品不像大房间多。厨房因为有煤气管道，并不安全。躲避时不可以藏得太深，要让进入火场的救援人员能够看到你的位置。&lt;/p&gt;
+&lt;p&gt;4，利用手边的工具&lt;/p&gt;
+&lt;p&gt;一切可以让外界知道我们位置的东西都可以利用，打手机或者挥手电都要试试。&lt;/p&gt;
+&lt;p&gt;如果是低层住户，可以用窗帘、床单等结成绳索，或者利用楼外管道逃向地面。高层用户就不要尝试了。&lt;/p&gt;
+&lt;p&gt;用湿毛巾或湿衣物捂住口鼻，是逃跑时防护浓烟的有效手段。如果没有这些东西，就只能尽量匍匐前进，躲开浓烟。&lt;/p&gt;
+&lt;p&gt;5，办公楼怎么办&lt;/p&gt;
+&lt;p&gt;办公楼比纯住宅相对安全一点，因为一般都设有自动消防措施；而且公用区域多，火灾容易被尽早发现。但办公楼人员较多，逃生时一定不能慌乱，要有秩序有组织地撤离。另外办公楼结构比较复杂，要按着墙上绿箭头的标志来跑才不会迷路。&lt;/p&gt;
+&lt;p&gt;可见熟悉办公环境也是很重要的。大家平时下班可以在楼里四处转转，设想一下着火时的逃生路线。&lt;/p&gt;
+&lt;p&gt;6，千万不要……&lt;/p&gt;
+&lt;p&gt;千万不要跳，宁愿留守。把命运交给消防队员，而不是地心引力。&lt;/p&gt;
+&lt;p&gt;千万不要慌，保持冷静。火情虽然危急，但火势蔓延是有一定速度的，我们完全有时间停下来想一想，把形势判断清楚再做决定，总好过慌乱中出错。&lt;/p&gt;
+&lt;p&gt;看到初起火灾，千万不要不做声独自逃走。如果无法用室内消防设施扑灭，要赶紧通知周围住户和消防队。独自逃走而把危险留给不知情的邻居或同事们就太不负责任了。&lt;/p&gt;
+&lt;/div&gt;
+
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">果壳问答</dc:creator><guid>http://www.guokr.com/ask/item/1490/</guid></item></channel></rss>
